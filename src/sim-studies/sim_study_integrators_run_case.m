@@ -1,22 +1,21 @@
-function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
-    %% Execute one defined integrator sim study case
+function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
+    %% Execute one integrator simulation study case
     arguments
-        % Function handle of function that specifies the case
-        caseDefFun  (1,1) function_handle
+        % Definition of the simulation study case
+        caseDef (1,1) struct
 
-        % Global simulation study options
-        runOpts     (1,1) struct
+        % Simulation study run options
+        runOpts (1,1) struct
     end
 
-    % Global options
-    ACCURATE_TIMING = runOpts.accurateTiming;
-    SAVE_RESULTS = runOpts.saveResults;
+    % Run options
+    accurateTiming = runOpts.accurateTiming;
+    saveResults = runOpts.saveResults;
     resultsDir = runOpts.resultsDir;
 
     % Case data
-    caseDef = caseDefFun();
-    SYSTEM_MDL = caseDef.systemModel;
-    DISSIP_CASE = caseDef.dissipationCase;
+    systemModel = caseDef.systemModel;
+    dissipationCase = caseDef.dissipationCase;
     links = caseDef.links;
     MBSim = caseDef.MBSim;
     intDef = caseDef.intDef;
@@ -28,21 +27,21 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
     MBSim.visualizeSystemRefConf;
 
 
-    %% Turn on diary / write console output to file / Prepare output folder
+    %% Prepare output folder and command log
 
     subFolder = sprintf("%s_simStudy_integrators__system_%d_dissip_%d", ...
-        string(datetime, 'yyMMdd_HHmm'), SYSTEM_MDL, DISSIP_CASE);
+        string(datetime, 'yyMMdd_HHmm'), systemModel, dissipationCase);
 
     saveDir = fullfile(resultsDir, subFolder);
 
     % Create output folder
-    if SAVE_RESULTS && ~isfolder( saveDir )
+    if saveResults && ~isfolder( saveDir )
         mkdir( saveDir );
     end
 
     simStartTime = datetime;
 
-    if SAVE_RESULTS
+    if saveResults
         diary(fullfile(saveDir, 'simStudy.log'));
 
         fprintf('Starting Log. Time: %s\n', string(simStartTime, 'dd.MM.yy, HH:mm:ss'));
@@ -60,7 +59,7 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
 
     end
 
-    %% Specify Simulation Parameters
+    %% Specify simulation parameters
 
     % End time
     MBSim.simPars.tEnd = tEnd;
@@ -136,7 +135,7 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
 
             % Solver settings
             MBSimCase.solver = intDef(iInt).Solver;
-            MBSimCase.solver.accurateTiming = ACCURATE_TIMING;
+            MBSimCase.solver.accurateTiming = accurateTiming;
 
             switch intDef(iInt).Solver.type
                 case "varint"
@@ -189,7 +188,7 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
 
     %% Plotting
 
-    fhs = gobjects(0); %#ok<*SAGROW>
+    fhs = gobjects(0); %#ok<*AGROW>
 
     for iInt = 1:nIntegrators
 
@@ -275,7 +274,7 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
     end
 
 
-    %% Overall Comparison Plots
+    %% Overall comparison plots
 
     % Mean error over computation time
     fhs(end+1) = figure("Name", "qErrorNorm / tComp", "NumberTitle", "off");
@@ -301,7 +300,7 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
 
 
     % Save plots
-    if SAVE_RESULTS
+    if saveResults
         disp("Saving figures...")
         saveFigureArray(fhs, saveDir, ...
             "saveFig", true, "saveJPEG", true, "savePDF", false);
@@ -309,9 +308,9 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
 
 
     %% Save results
-    if SAVE_RESULTS
+    if saveResults
 
-        disp('Saving Overall Results Data...')
+        disp('Saving overall results data...')
         try
             save( ...
                 fullfile(saveDir, "simStudyResults.mat"), ...
@@ -326,7 +325,7 @@ function saveDir = sim_study_integrators_run_case(caseDefFun, runOpts)
     end
 
 
-    %% End script
+    %% Finish case
 
     simStopTime = datetime;
     fprintf(...

@@ -1,8 +1,8 @@
-function caseDef = integrator_case_planar_pendulum(DISSIP_CASE)
-    %% Define integrator sim study case: planar pendulum
+function caseDef = integrator_case_planar_pendulum(dissipationCase)
+    %% Define integrator simulation study case: planar pendulum
     arguments
         % Whether the dissipative or conservative case is used
-        DISSIP_CASE (1,1) logical
+        dissipationCase (1,1) logical
     end
 
     % intDef defines the integrators to compare. Its fields are:
@@ -25,7 +25,7 @@ function caseDef = integrator_case_planar_pendulum(DISSIP_CASE)
     % Solver error margin of the VI ref. simulation
     errorMarginRef = 2*1e-10;
 
-    if DISSIP_CASE
+    if dissipationCase
         links = systemDefPlanarNLinkPendulum("d", 2.5e-2);
     else
         links = systemDefPlanarNLinkPendulum("d", 0);
@@ -93,7 +93,7 @@ function caseDef = integrator_case_planar_pendulum(DISSIP_CASE)
 
     %% Assign to output struct
     caseDef.systemModel = 0;
-    caseDef.dissipationCase = DISSIP_CASE;
+    caseDef.dissipationCase = dissipationCase;
     caseDef.links = links;
     caseDef.MBSim = MBSim;
     caseDef.intDef = intDef;

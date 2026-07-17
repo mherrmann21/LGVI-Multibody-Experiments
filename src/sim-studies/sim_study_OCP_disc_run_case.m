@@ -1,22 +1,23 @@
-function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
-    %% Execute one defined OCP study case
+function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
+    %% Execute one OCP discretization study case
 
     arguments
-        % Function handle of function that specifies the case
-        caseDefFun  (1,1) function_handle
+        % Definition of the simulation study case
+        caseDef (1,1) struct
 
-        % Global simulation study options
-        runOpts     (1,1) struct
+        % Simulation study run options
+        runOpts (1,1) struct
     end
 
-    % Global options
-    DEBUG_SCRIPT = runOpts.debug;
-    SAVE_RESULTS = runOpts.saveResults;
-    opts.resultsDir = runOpts.resultsDir;
+    % Run options
+    debugMode = runOpts.debug;
+    saveResults = runOpts.saveResults;
+    resultsDir = runOpts.resultsDir;
     hVec = runOpts.hVec;
+    animateInitialGuess = runOpts.animateInitialGuess;
 
     % Case data
-    caseDef = caseDefFun();SYSTEM_MDL = caseDef.systemModel;
+    systemModel = caseDef.systemModel;
     links = caseDef.links;
     MBSim = caseDef.MBSim;
     OCP = caseDef.OCP;
@@ -63,7 +64,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     % Time step defining the comparison grid
     hComp = max(hVec);
 
-    if DEBUG_SCRIPT
+    if debugMode
         debugDiscIndices = 1;%[1,3];
         discNames = discNames(debugDiscIndices);
         discretizations = discretizations(debugDiscIndices);
@@ -71,17 +72,18 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
         %hRef  = min(hVec)/2;
     end
 
-    %% Turn on diary / write console output to file / Prepare output folder
+    %% Prepare output folder and command log
 
-    subFolder = sprintf("%s_simStudy_ocp_discretization__system_%d", string(datetime, 'yyMMdd_HHmm'), SYSTEM_MDL);
-    saveDir = fullfile(opts.resultsDir, subFolder);
+    subFolder = sprintf("%s_simStudy_ocp_discretization__system_%d", ...
+        string(datetime, 'yyMMdd_HHmm'), systemModel);
+    saveDir = fullfile(resultsDir, subFolder);
 
     % Create output folder
-    if SAVE_RESULTS && ~isfolder( saveDir )
+    if saveResults && ~isfolder( saveDir )
         mkdir( saveDir );
     end
 
-    if SAVE_RESULTS
+    if saveResults
         diary(fullfile(saveDir, 'simStudy.log'));
     end
 
@@ -94,14 +96,12 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     fprintf('   Host Machine: %s\n\n', getenv('COMPUTERNAME'));
 
 
-    %% Compute Initial Guess
+    %% Compute initial guess
     % with reference time step
 
     OCPRef = OCP;
     OCPRef.h    = hRef;
     OCPRef.Name = "Ref";
-
-    ANIMATE_IG = runOpts.animateInitialGuess;
 
     if computeInitialGuess
         [q_init_ref, qd_init_ref, u_init_ref, MBSimIG, qOptStatic] = OCPComputeInitialGuess_InvDyn( ...
@@ -114,14 +114,14 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
         coordSysSE3(SE3Matrix(eye(3), OCPRef.x_TCP_F));
 
         % Animate results
-        if ANIMATE_IG
+        if animateInitialGuess
             fig = init3Dplot('Name', "Animation Initial Guess");%, "WindowStyle","normal");
             coordSysSE3(SE3Matrix(eye(3), OCPRef.x_TCP_F));
             MBSimIG.animateSimResults("figure", fig);
         end
 
         % Save plots
-        if SAVE_RESULTS
+        if saveResults
             saveFigureArray(fh_IG_Ref, saveDir, "saveFig", true, "saveJPEG", true);
             close all;
         end
@@ -133,7 +133,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
 
     % For contManip trajectory tracking: Update TCP final position to valid
     % final position
-    if OCP.iRC(5) && SYSTEM_MDL == 1
+    if OCP.iRC(5) && systemModel == 1
         gOptStatic = MBSim.MBSys.computeFwdKin(qOptStatic);
         g_TCP = gOptStatic(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
         x_TCP_des = g_TCP(1:3, 4);
@@ -146,13 +146,13 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     if OCP.iRC(5)
         [OCPRef.x_TCP_traj, fh_traj_IG] = generateDesiredTCPTrajLinear(MBSim, OCPRef);
 
-        if SAVE_RESULTS
+        if saveResults
             saveFigureArray(fh_traj_IG, saveDir, "saveFig", true, "saveJPEG", true);
             close all;
         end
     end
 
-    %% Define and Solve Reference OCP
+    %% Define and solve reference OCP
 
     fprintf("\nStarting reference OCP...\n\n");
 
@@ -235,7 +235,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     drawnow;
 
     % Save plots
-    if SAVE_RESULTS
+    if saveResults
         saveFigureArray(fh_Ref, saveDir, "saveFig", true, "saveJPEG", true);
         close all;
     end
@@ -306,14 +306,14 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
         fh_h(end+1:end+2) = plotOCPqu(OCPh, q_init_h, u_init_h, ...
             "figureName", sprintf("Time Step %d Initial Guess", ih), ...
             "plotDerivatives", true);
-        if SAVE_RESULTS
+        if saveResults
             saveFigureArray(fh_h, saveDir, "saveFig", true, "saveJPEG", true);
             close all;
         end
 
         for iInt = 1:nInts
 
-            if SAVE_RESULTS; close all; end
+            if saveResults; close all; end
             fprintf("\nTime step %d/%d: Starting discretization %d/%d (%s)...\n\n", ...
                 ih, nTSteps, iInt, nInts, discNames(iInt));
 
@@ -355,7 +355,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
             fh_T(3:4) = plotOCPqu(OCPT, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
             if OCP.iRC(end) % If OCP includes trajectory tracking
-                fh_T(end+1) = plotOCPTCPTraj(MBSim, OCPT, q_sol); %#ok<SAGROW>
+                fh_T(end+1) = plotOCPTCPTraj(MBSim, OCPT, q_sol); %#ok<AGROW>
             end
 
             % Temp: Plot midpoint values of u
@@ -390,7 +390,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
             resultsArr(ih, iInt).qErrorNorm = norm(abs(q_comp - q_ref_c))*sqrt(hComp);
             resultsArr(ih, iInt).uErrorNorm = norm(abs(u_comp - u_ref_c))*sqrt(hComp);
 
-            if SAVE_RESULTS
+            if saveResults
                 saveFigureArray(fh_T, saveDir, "saveFig", true, "saveJPEG", true);
                 clear fh_T;
             end
@@ -608,7 +608,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     title("cost function error over comp. time", "Interpreter", "latex");
 
 
-    if SAVE_RESULTS
+    if saveResults
         saveFigureArray(fh_eval, saveDir, "saveFig", true, "saveJPEG", true, "savePDF", true);
     end
 
@@ -663,12 +663,12 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     end
 
 
-    if SAVE_RESULTS
+    if saveResults
         fhs = [fh1(:); fh2(:); fh3(:)];
         saveFigureArray(fhs, saveDir, "saveFig", true, "saveJPEG", true, "savePDF", false);
     end
 
-    %% Plot Reference Solution
+    %% Plot reference solution
 
     disp('Post processing...')
     gTCPDes = SE3Matrix(eye(3), OCPRef.x_TCP_F);
@@ -702,8 +702,8 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
 
     %% Save overall data
 
-    if SAVE_RESULTS
-        disp('Saving Overall Results Data...')
+    if saveResults
+        disp('Saving overall results data...')
         try
             save( ...
                 fullfile(saveDir, "simStudyResults.mat"), ...
@@ -720,7 +720,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDefFun, runOpts)
     end
 
 
-    %% End script
+    %% Finish case
     simStopTime = datetime;
 
     fprintf(...

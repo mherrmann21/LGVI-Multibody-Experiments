@@ -28,13 +28,13 @@ switch SYSTEM_MDL
         %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0";
         %subFolder(2) = "260212_1157_simStudy_integrators__system_0_dissip_1";
         subFolder(1) = "260716_1611_simStudy_integrators__system_0_dissip_0";
-        subFolder(2) = "260716_1603_simStudy_integrators__system_0_dissip_1";        
+        subFolder(2) = "260716_1603_simStudy_integrators__system_0_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_rigid";
     case 1
         % subFolder(1) = "260212_1455_simStudy_integrators__system_1_dissip_0";
         % subFolder(2) = "260212_1554_simStudy_integrators__system_1_dissip_1";
         subFolder(1) = "260716_1631_simStudy_integrators__system_1_dissip_0";
-        subFolder(2) = "260716_1631_simStudy_integrators__system_1_dissip_1";        
+        subFolder(2) = "260716_1631_simStudy_integrators__system_1_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_flexible";
     case 2
         %subFolder = "260212_1224_simStudy_integrators__system_2_dissip_1";
@@ -211,7 +211,7 @@ if SYSTEM_MDL == 2
 end
 
 
-%% Snapshots 
+%% Snapshots
 
 if SYSTEM_MDL == 1
     for iC = 1:nCases

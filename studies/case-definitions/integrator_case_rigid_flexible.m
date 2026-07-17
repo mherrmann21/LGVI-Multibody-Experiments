@@ -1,5 +1,5 @@
 function caseDef = integrator_case_rigid_flexible
-    %% Define integrator sim study case: rigid-flexible system
+    %% Define integrator simulation study case: rigid-flexible system
 
     % intDef defines the integrators to compare. Its fields are:
     %   Name: Display name of the integrator
@@ -19,7 +19,7 @@ function caseDef = integrator_case_rigid_flexible
     hRef = 2^-16;
 
     % This case is always with dissipation
-    DISSIP_CASE = true;
+    dissipationCase = true;
 
     % Solver error margin of the VI ref. simulation
     errorMarginRef = 2*5e-12;
@@ -86,7 +86,7 @@ function caseDef = integrator_case_rigid_flexible
 
     %% Assign to output struct
     caseDef.systemModel = 2;
-    caseDef.dissipationCase = DISSIP_CASE;
+    caseDef.dissipationCase = dissipationCase;
     caseDef.links = links;
     caseDef.MBSim = MBSim;
     caseDef.intDef = intDef;

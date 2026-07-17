@@ -1,5 +1,5 @@
-%% Simulation Study for Discretizations of OCPs
-% Run all cases in one batch.
+%% Simulation study comparing OCP discretizations
+% Run the selected cases in one batch.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
@@ -11,9 +11,10 @@ close all
 
 %% Workflow settings
 
-% Debug mode restricts the comparison to the VI discretization
-runOpts.debug = true;
+% Whether to restrict the comparison to the VI discretization
+runOpts.debug = false;
 
+% Whether to save data and plots or animate the initial guess
 runOpts.saveResults = true;
 runOpts.animateInitialGuess = true;
 
@@ -24,25 +25,21 @@ runOpts.hVec = (2.^(-6:-1:-9)).';
 % Directory where a results subfolder is created for each case
 runOpts.resultsDir = fullfile(getRootFolder, "results", "runs");
 
-% System models to run
-simCases = {
+% Specify each case as a function handle in the cell array.
+caseDefinitionFcns = {
     @ocp_case_planar_manipulator
     @ocp_case_rigid_robot
     @ocp_case_continuum_manipulator
     };
 
-% System IDs:
-% 0 = rigid lab robot
-% 1 = continuum manipulator
-% 3 = planar manipulator
-
 %% Run requested cases
 
-for iCase = 1:numel(simCases)
+for iCase = 1:numel(caseDefinitionFcns)
     close all
     fprintf("\nRunning OCP discretization study case %d/%d...\n\n", ...
-        iCase, numel(simCases));
-    sim_study_OCP_disc_run_case(simCases{iCase}, runOpts);
+        iCase, numel(caseDefinitionFcns));
+    caseDef = caseDefinitionFcns{iCase}();
+    sim_study_OCP_disc_run_case(caseDef, runOpts);
 end
 
 disp("OCP discretization study batch finished.")

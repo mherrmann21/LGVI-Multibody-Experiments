@@ -28,7 +28,7 @@ plotSaveDir = fullfile(getRootFolder, "results", "plots", "time-integration");
 % Subfolder names
 switch SYSTEM_MDL
     case 0
-        %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0"; 
+        %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0";
         %subFolder(2) = "260212_1157_simStudy_integrators__system_0_dissip_1";
         subFolder(1) = "260718_0002_simStudy_integrators__system_0_dissip_0";
         subFolder(2) = "260718_0004_simStudy_integrators__system_0_dissip_1";
@@ -41,7 +41,7 @@ switch SYSTEM_MDL
         plotSaveSubFolder = "integrator_simstudy_flexible";
     case 2
         %subFolder = "260224_1428_simStudy_integrators__system_2_dissip_1";
-        subFolder = "260716_1634_simStudy_integrators__system_2_dissip_1";        
+        subFolder = "260716_1634_simStudy_integrators__system_2_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_combined";
     otherwise
         error("Not defined.");

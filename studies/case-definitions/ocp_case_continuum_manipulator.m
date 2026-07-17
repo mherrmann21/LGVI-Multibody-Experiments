@@ -1,10 +1,9 @@
 function caseDef = ocp_case_continuum_manipulator
-    %% Define OCP sim study case: Continuum Manipulator (ID 1)
+    %% Define OCP simulation study case: continuum manipulator (ID 1)
 
-    SYSTEM_MDL = 1;
     OCP = OCPDefinition;
 
-    %% Define Case
+    %% Define case
     links = systemDefContManip_simStudy("usedTendons", [1,2,3]);
     MBSim = MBSimulation(links, "displayInfo", false);
 
@@ -59,7 +58,7 @@ function caseDef = ocp_case_continuum_manipulator
     OCP.nlpOpts.ipopt.diverging_iterates_tol = 1e11;
 
     %% Assign to output struct
-    caseDef.systemModel = SYSTEM_MDL;
+    caseDef.systemModel = 1;
     caseDef.links = links;
     caseDef.MBSim = MBSim;
     caseDef.OCP = OCP;

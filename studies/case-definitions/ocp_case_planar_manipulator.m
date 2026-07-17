@@ -1,7 +1,6 @@
 function caseDef = ocp_case_planar_manipulator
-    %% Define OCP sim study case: Planar Manipulator (ID 3)
+    %% Define OCP simulation study case: planar manipulator (ID 3)
 
-    SYSTEM_MDL = 3;
     OCP = OCPDefinition;
 
     %% Define case
@@ -63,7 +62,7 @@ function caseDef = ocp_case_planar_manipulator
     refDiscretization = OCPIntegratorRK("RK4");
 
     %% Assign to output struct
-    caseDef.systemModel = SYSTEM_MDL;
+    caseDef.systemModel = 3;
     caseDef.links = links;
     caseDef.MBSim = MBSim;
     caseDef.OCP = OCP;

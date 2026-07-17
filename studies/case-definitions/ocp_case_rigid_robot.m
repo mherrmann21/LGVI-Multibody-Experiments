@@ -1,7 +1,6 @@
 function caseDef = ocp_case_rigid_robot
-    %% Define OCP sim study case: Rigid Lab Robot (ID 0)
+    %% Define OCP simulation study case: rigid lab robot (ID 0)
 
-    SYSTEM_MDL = 0;
     OCP = OCPDefinition;
 
     %% Define case
@@ -56,7 +55,7 @@ function caseDef = ocp_case_rigid_robot
     refDiscretization = OCPIntegratorRK("RK4");
 
     %% Assign to output struct
-    caseDef.systemModel = SYSTEM_MDL;
+    caseDef.systemModel = 0;
     caseDef.links = links;
     caseDef.MBSim = MBSim;
     caseDef.OCP = OCP;

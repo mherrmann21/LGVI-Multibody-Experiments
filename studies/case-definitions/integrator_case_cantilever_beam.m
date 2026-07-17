@@ -1,8 +1,8 @@
-function caseDef = integrator_case_cantilever_beam(DISSIP_CASE)
-    %% Define integrator sim study case: planar pendulum
+function caseDef = integrator_case_cantilever_beam(dissipationCase)
+    %% Define integrator simulation study case: cantilever beam
     arguments
         % Whether the dissipative or conservative case is used
-        DISSIP_CASE (1,1) logical
+        dissipationCase (1,1) logical
     end
 
     % intDef defines the integrators to compare. Its fields are:
@@ -25,7 +25,7 @@ function caseDef = integrator_case_cantilever_beam(DISSIP_CASE)
     % Solver error margin of the VI ref. simulation
     errorMarginRef = 2*1e-14;
 
-    if DISSIP_CASE
+    if dissipationCase
         links = systemDefCantileverBeamHK24;
     else
         links = systemDefCantileverBeamHK24("d", 0);
@@ -56,13 +56,13 @@ function caseDef = integrator_case_cantilever_beam(DISSIP_CASE)
     intDef(1).Solver = integratorVarInt;
     intDef(1).Solver.aTrapez = 1/2;
 
-    if DISSIP_CASE
+    if dissipationCase
         intDef(1).Solver.errorMargin = 5e-14;
     else
         intDef(1).Solver.errorMargin = 1e-14;
     end
 
-    if DISSIP_CASE
+    if dissipationCase
         odeTols     = 10.^(-2:-1:-7);
         odeTolsLong = 10.^(-2:-1:-11);
 
@@ -104,7 +104,7 @@ function caseDef = integrator_case_cantilever_beam(DISSIP_CASE)
 
     %% Assign to output struct
     caseDef.systemModel = 1;
-    caseDef.dissipationCase = DISSIP_CASE;
+    caseDef.dissipationCase = dissipationCase;
     caseDef.links = links;
     caseDef.MBSim = MBSim;
     caseDef.intDef = intDef;
