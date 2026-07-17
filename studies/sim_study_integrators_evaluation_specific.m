@@ -7,7 +7,7 @@
 
 clear
 close all
-%addLocalPaths;
+
 
 %% Specify and load results
 
@@ -16,13 +16,11 @@ SYSTEM_MDL = 1;
 SAVE_PLOTS = true;
 
 % Directory where all result subfolders are
-%resultsDir = 'H:\Forschung\thesis\simResults';
-resultsDir = 'C:\Forschung\simResults';
+resultsDir = fullfile(getRootFolder, "results", "runs");
 
 % Directory where all simstudy results are stored in separate subfolders
 % (defined below)
-plotSaveDir = 'C:\Users\ge97bij\LRZ Sync+Share\Doc\phd-thesis\plots';
-
+plotSaveDir = fullfile(getRootFolder, "results", "plots", "time-integration");
 
 % Subfolder names
 switch SYSTEM_MDL

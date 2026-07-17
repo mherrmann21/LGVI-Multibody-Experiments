@@ -8,7 +8,6 @@
 
 clear
 close all
-%addLocalPaths;
 
 %% Specify and load results
 
@@ -19,13 +18,11 @@ SYSTEM_MDL = 3;
 SAVE_PLOTS = false;
 
 % Directory where all result subfolders are
-resultsDir = 'H:\Forschung\SimResults_all';
-resultsDir = 'C:\Forschung\SimResults';
+resultsDir = fullfile(getRootFolder, "results", "runs");
 
 % Directory where all simstudy results are stored in separate subfolders
 % (defined below)
-plotSaveDir = 'C:\Users\ge97bij\LRZ Sync+Share\Doc\phd-thesis\plots';
-plotSaveDir = 'plots';
+plotSaveDir = fullfile(getRootFolder, "results", "plots", "optimal-control");
 
 % subfolder name
 switch SYSTEM_MDL
@@ -36,8 +33,8 @@ switch SYSTEM_MDL
         subFolder = "260313_1115_simStudy_ocp_discretization__system_1";
         plotSaveSubFolder = "ocp_simstudy_contManip";
     case 3
-        subFolder = "260313_1107_simStudy_ocp_discretization__system_3";
         subFolder = "260716_1712_simStudy_ocp_discretization__system_3";        
+        subFolder = "260718_0038_simStudy_ocp_discretization__system_3";        
         plotSaveSubFolder = "ocp_simstudy_planarManip";
     otherwise
         error("Not defined.");
@@ -55,12 +52,12 @@ res = simStudyRes.res;
 % Count "solved to acceptable level" as failed
 res.success = res.return_status == "Solve_Succeeded";
 
-
 % Only get successful solution data
 res.qErrorM(~res.success) = nan;
 res.qErrorN(~res.success) = nan;
 res.fError(~res.success) = nan;
-res.uError(~res.success) = nan;
+res.uErrorM(~res.success) = nan;
+res.uErrorN(~res.success) = nan;
 res.iter_count(~res.success) = nan;
 res.t_wall_total(~res.success) = nan;
 

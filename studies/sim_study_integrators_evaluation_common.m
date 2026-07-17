@@ -7,9 +7,6 @@
 
 clear
 close all
-%addLocalPaths;
-
-%addpath("simStudy_simTimes\Radau")
 
 
 %% Specify and load results
@@ -17,27 +14,24 @@ close all
 % 0 = Pendulum
 % 1 = Cantilever beam HK24
 % 2 = Rigid-Flexible Robot
-SYSTEM_MDL = 1;
+SYSTEM_MDL = 0;
 
 SAVE_PLOTS = true;
 
 % Directory where all result subfolders are
-%resultsDir = 'C:/Forschung/SimResults';
-%resultsDir = 'H:\Forschung\thesis\simResults';
-resultsDir = 'C:\Forschung\simResults';
+resultsDir = fullfile(getRootFolder, "results", "runs");
 
 % Directory where all simstudy results are stored in separate subfolders
 % (defined below)
-plotSaveDir = 'C:\Users\ge97bij\LRZ Sync+Share\Doc\phd-thesis\plots';
-plotSaveDir = 'plots';
+plotSaveDir = fullfile(getRootFolder, "results", "plots", "time-integration");
 
 % Subfolder names
 switch SYSTEM_MDL
     case 0
         %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0"; 
         %subFolder(2) = "260212_1157_simStudy_integrators__system_0_dissip_1";
-        subFolder(1) = "260716_1611_simStudy_integrators__system_0_dissip_0";
-        subFolder(2) = "260716_1603_simStudy_integrators__system_0_dissip_1";
+        subFolder(1) = "260718_0002_simStudy_integrators__system_0_dissip_0";
+        subFolder(2) = "260718_0004_simStudy_integrators__system_0_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_rigid";
     case 1
         % subFolder(1) = "260212_1455_simStudy_integrators__system_1_dissip_0";

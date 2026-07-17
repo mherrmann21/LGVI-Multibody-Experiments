@@ -1,4 +1,4 @@
-function rootPath = getRepositoryRootFolder
+function rootPath = getRootFolder
     %% Get the absolute root folder of the repository
 
     % Absolute file path of this function

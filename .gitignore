@@ -1,3 +1,15 @@
+# results
+results/runs/**
+results/plots/optimal-control/**
+results/plots/time-integration/**
+
+# Preserve documentation and directory placeholders
+!results/runs/**/.gitkeep
+!results/plots/optimal-control/.gitkeep
+!results/plots/time-integration/.gitkeep
+
+### MATLAB ignores
+
 # Autosave files
 *.asv
 *.m~

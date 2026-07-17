@@ -31,11 +31,13 @@ The first two simulation cases are each analyzed both with and without dissipati
 
 2. Run `startup_sim_studies.m` to add all required functions to the MATLAB path and check for dependencies.
 
-3. Run the simulation studies with the `run_xy` scripts.
-Change the systems and dissipation cases in the script options.
-The scripts save the simulation results in `.mat` files in the specified folders.
+3. Run the simulation studies in the `/studies` folder:
+   - `sim_study_integrators_run_sims`: Time integration simulation study
+   - `sim_study_OCP_disc_run_sims`: Optimal control discretization study
+   
+   The scripts save the simulation results in the `/results/` folders.
 
-4. Run the evaluation to generate the output plots.
+4. Run the evaluation scripts to generate the output plots.
 Adjust the system, dissipation case, and data file paths in the script settings.
 
 ## Requirements
