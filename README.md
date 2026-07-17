@@ -4,7 +4,7 @@
 ![MATLAB Version](https://img.shields.io/badge/MATLAB-R2025b%2B-blue)
 ![Work in Progress](https://img.shields.io/badge/status-WIP-orange)
 
-# LGVI-Multibody-Experiments
+# LGVI Multibody Experiments
 Numerical experiments for the analysis of time integrators &amp; discretizations for the simulation &amp; optimal control of rigid-flexible robotic systems.
 
 This repository contains the numerical experiments on time integration and optimal control of rigid-flexible multibody systems reported in [1].
@@ -29,21 +29,23 @@ The first two simulation cases are each analyzed both with and without dissipati
 
 1. Make sure the `mex` files in the toolbox have been built correctly (run `elara.build` and check with `elara.setup`)
 
-2. Run the simulation studies with the `run_xy` scripts.
+2. Run `startup_sim_studies.m` to add all required functions to the MATLAB path and check for dependencies.
+
+3. Run the simulation studies with the `run_xy` scripts.
 Change the systems and dissipation cases in the script options.
 The scripts save the simulation results in `.mat` files in the specified folders.
 
-3. Run the evaluation to generate the output plots.
+4. Run the evaluation to generate the output plots.
 Adjust the system, dissipation case, and data file paths in the script settings.
 
 ## Requirements
 
 * MATLAB R2025b
 * [ELARA](https://github.com/ELARA-Toolbox/ELARA) Toolbox, V0.1 (installed and available on the MATLAB path)
-* [CasADi](https://web.casadi.org/) V3.7.2  (only for the optimal control experiments)
+* [CasADi](https://web.casadi.org/) V3.7.2  (only for the optimal control experiments; must be installed and available on the MATLAB path)
 * [Coin-HSL linear solvers](https://licences.stfc.ac.uk/product/coin-hsl) for IPOPT (version 2024.05.15)
 
-Later versions of the required software may work, but have not been not tested and may lead to different results.
+Later versions of the required software may work, but have not been tested and may lead to different results.
 
 The code is tested on Windows 11.
 
