@@ -1,4 +1,4 @@
-function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, PLOT_FOLDER, opts)
+function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, plotFolder, opts)
     %% Format the given figure and save to PDF with fixed width
     % The axis dimensions are computed to fit into the fixed PDF width with
     % minimal white space.
@@ -19,9 +19,9 @@ function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, PLOT_FOLDER
 
         % Folder, where the figure is to be saved.
         % If empty, the figure is not saved at all.
-        PLOT_FOLDER     (1,1) string
+        plotFolder      (1,1) string
 
-        % Additional margin added to the PDF size (after the figure axis
+        % Additional margin added to the PDF size (after the figure axes
         % have been adjusted to the size parameters) to include e.g.,
         % colorbars etc.
         % Elements: [left, right, bottom, top] cm
@@ -32,10 +32,10 @@ function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, PLOT_FOLDER
         opts.outsideLegendYShift (1,1) double = 0.2;
 
         % For legends outside the axes: Match the legend's width to the
-        % axis width?
+        % axes width?
         opts.outsideLegendMatchWidth (1,1) logical = true;
 
-        % Font size for all axis elements
+        % Font size for all axes elements
         opts.fontSize (1,1) double = 9;
     end
 
@@ -71,7 +71,7 @@ function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, PLOT_FOLDER
         layoutObj.Units = 'centimeters';
         ti = layoutObj.TightInset;
 
-        for iCh = 1:length(layoutObj.Children)
+        for iCh = 1:numel(layoutObj.Children)
             layoutObj.Children(iCh).FontSize = opts.fontSize;
         end
     else
@@ -129,12 +129,12 @@ function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, PLOT_FOLDER
     % Adjust paper size
     if any([extraLeft, extraBottom, extraRight, extraTop])
         % Expand figure & PDF size
-            newPdfSize = pdfSize + [extraLeft + extraRight, ...
-                extraBottom + extraTop];
+        newPdfSize = pdfSize + [extraLeft + extraRight, ...
+            extraBottom + extraTop];
 
-            fh.Position(3:4) = newPdfSize;
-            fh.PaperSize     = newPdfSize;
-            fh.PaperPosition = [0, 0, newPdfSize];
+        fh.Position(3:4) = newPdfSize;
+        fh.PaperSize     = newPdfSize;
+        fh.PaperPosition = [0, 0, newPdfSize];
     end
 
     % Adjust legend
@@ -163,9 +163,9 @@ function formatAndSaveFigureFixedWidth(fh, pdfWidth, pdfAspectRatio, PLOT_FOLDER
     end
 
     %% Save figure
-    if PLOT_FOLDER ~= ""
-        savefig(fh, fullfile(PLOT_FOLDER, fh.Name));
-        %exportgraphics(fh, strcat(fullfile(PLOT_FOLDER, fh.Name), ".pdf"));
-        print(fh, fullfile(PLOT_FOLDER, fh.Name), "-dpdf", "-vector");
+    if plotFolder ~= ""
+        savefig(fh, fullfile(plotFolder, fh.Name));
+        %exportgraphics(fh, strcat(fullfile(plotFolder, fh.Name), ".pdf"));
+        print(fh, fullfile(plotFolder, fh.Name), "-dpdf", "-vector");
     end
 end

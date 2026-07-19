@@ -65,7 +65,7 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
     MBSim.simPars.tEnd = tEnd;
 
     % Initial configuration
-    q0 = ones(MBSim.MBSys.nDoF,1)*0;
+    q0 = zeros(MBSim.MBSys.nDoF,1);
     MBSim.simPars.q0 = q0;
     MBSim.simPars.qDot0 = zeros(MBSim.MBSys.nDoF,1);
 
@@ -180,7 +180,7 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
                 toutComp, 'pchip').';
 
             res(iInt).qErrorMat(iCase,:) = vecnorm(abs(q_comp - q_ref_c));
-            res(iInt).qErrorNorm(iCase)  = norm(abs(q_comp - q_ref_c))*sqrt(hComp);
+            res(iInt).qErrorNorm(iCase)  = norm(abs(q_comp - q_ref_c), 'fro')*sqrt(hComp);
             res(iInt).qErrorMax(iCase)   = max(vecnorm(abs(q_ref_c - q_comp)));
         end
     end

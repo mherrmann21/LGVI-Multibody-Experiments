@@ -1,9 +1,7 @@
 function saveFigureArray(figs, saveDir, opts)
     %% Save all figures in a figure array to file
     % The name of the file is taken from the figure name;
-    % optionally, a prefix can be added before the struct field name.
-    %
-    % ToDo: Add options to the saved figures, if needed
+    % optionally, a prefix can be added to the file name.
     %
     % Note: For plots with large amounts of data (lots of data points),
     % the generated files might be excessively large with default settings.
@@ -17,25 +15,24 @@ function saveFigureArray(figs, saveDir, opts)
     % Technical University of Munich
 
     arguments
-        % Struct containing the figure handles as fields
+        % Array of figure handles
         figs (:,1)
 
-        % String with full path to the folder, where the files should be saved
+        % Full path to the folder where the files should be saved
         saveDir    (1,1) string
 
-        % Optional prefix for the file name, which is added before the
-        % struct field name
+        % Optional prefix added before the figure name
         opts.namePrefix (1,1) string = "";
 
-        opts.saveJPEG (1,1) logical = true % Save figure as jpeg?
-        opts.saveFig  (1,1) logical = true % Save figure as fig?
-        opts.savePDF  (1,1) logical = false; % Save as formatted pdf?
+        opts.saveJPEG (1,1) logical = true  % Save figure as JPEG?
+        opts.saveFig  (1,1) logical = true  % Save figure as FIG?
+        opts.savePDF  (1,1) logical = false % Save as formatted PDF?
 
         % PDF formatting sizes
         opts.pdfWidth       (1,1) double = 10*28.346; % Page width in pt
         opts.pdfAspectRatio (1,1) double = 3/2;
 
-        % Additional margin added to the PDF size (after the figure axis
+        % Additional margin added to the PDF size (after the figure axes
         % have been adjusted to the size parameters) to include e.g.,
         % colorbars etc.
         % Elements: [left, right, bottom, top]
@@ -46,10 +43,10 @@ function saveFigureArray(figs, saveDir, opts)
         opts.outsideLegendYShift (1,1) double = 0.2;
 
         % For legends outside the axes: Match the legend's width to the
-        % axis width?
+        % axes width?
         opts.outsideLegendMatchWidth (1,1) logical = true;
 
-        % Font size for all axis elements
+        % Font size for all axes elements
         opts.fontSize (1,1) double = 9;
     end
 
@@ -57,14 +54,14 @@ function saveFigureArray(figs, saveDir, opts)
 
         fileName = strcat(opts.namePrefix, figs(iFig).Name);
 
-        % Remove invalid characters from file name (tested for windows)
+        % Remove invalid characters from file name (tested on Windows)
         fileName = erase(fileName, ["<", ">", "/", ":", "*", """", "|", "?"]);
 
         % Remove double spaces
         fileName = replace(fileName, "  ", " ");
 
         % Get full file path
-        filePath = fullfile( saveDir, fileName);
+        filePath = fullfile(saveDir, fileName);
 
         % Little bit of formatting
         figs(iFig).Theme = "light";

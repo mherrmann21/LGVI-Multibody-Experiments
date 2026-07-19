@@ -30,8 +30,8 @@ switch SYSTEM_MDL
     case 0
         %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0";
         %subFolder(2) = "260212_1157_simStudy_integrators__system_0_dissip_1";
-        subFolder(1) = "260718_0002_simStudy_integrators__system_0_dissip_0";
-        subFolder(2) = "260718_0004_simStudy_integrators__system_0_dissip_1";
+        subFolder(1) = "260719_1835_simStudy_integrators__system_0_dissip_0";
+        subFolder(2) = "260719_1838_simStudy_integrators__system_0_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_rigid";
     case 1
         % subFolder(1) = "260212_1455_simStudy_integrators__system_1_dissip_0";
@@ -692,7 +692,6 @@ for iC = 1:nCases
                 );
 
             % Simulate system with longer end time
-            useODEFunctionCall = simStudyRes(iC).intDef(intIDDef).Name == "RADAU";
             MBSimEC = simStudyRes(iC).res(intIDDef).MBSimObj(caseID);
             MBSimEC.simPars.tEnd = E_tEnd;
             MBSimEC.solver.accurateTiming = false;

@@ -1,6 +1,6 @@
 function links = systemDefSRFRobot(opts)
     %% Define MBS System: "Surgical" Rigid-Soft Manipulator
-    % With three rigid base links and a flexible instrument as a third
+    % With three rigid base links and a flexible instrument as a fourth
     % link; inspired by systems like the DLR Miro
     arguments
         opts.dJoints    (1,1) double = 1e-2;
@@ -23,9 +23,6 @@ function links = systemDefSRFRobot(opts)
     linkF.isActuated   = true;
     linkF.nSeg         = opts.nSeg;
     linkF.L            = 0.4;
-    linkF.g_J_B        = eye(4);
-    linkF.Ba           = [ eye(3); zeros(3)];
-    linkF.Bc           = [ zeros(3); eye(3)];
     linkF.Ba           = [ eye(2); zeros(4,2)];
     linkF.Bc           = [ zeros(2,4); eye(4)];
     linkF.xiRef        = repmat([0;0;0;0;0;1], [1,linkF.nSeg]);

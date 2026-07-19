@@ -33,7 +33,6 @@ switch SYSTEM_MDL
         subFolder = "260313_1115_simStudy_ocp_discretization__system_1";
         plotSaveSubFolder = "ocp_simstudy_contManip";
     case 3
-        subFolder = "260716_1712_simStudy_ocp_discretization__system_3";
         subFolder = "260718_0038_simStudy_ocp_discretization__system_3";
         plotSaveSubFolder = "ocp_simstudy_planarManip";
     otherwise

@@ -28,11 +28,11 @@ function caseDef = integrator_case_rigid_flexible
     MBSim = MBSimulation(links, "displayInfo", true);
 
     % Add Pseudo-PD Control via joint Stiffness and Dissipation
-    nLinksRigid = 4;
+    nControlledJoints = 4;
     qDes = deg2rad([45,-45, 90,-80]);
-    MBSim.MBSys.dSys(1:nLinksRigid) = ones(nLinksRigid,1) * 20;
-    MBSim.MBSys.cSys(1:nLinksRigid) = ones(nLinksRigid,1) * 60;
-    MBSim.MBSys.qRef(1:nLinksRigid) = qDes;
+    MBSim.MBSys.dSys(1:nControlledJoints) = ones(nControlledJoints,1) * 20;
+    MBSim.MBSys.cSys(1:nControlledJoints) = ones(nControlledJoints,1) * 60;
+    MBSim.MBSys.qRef(1:nControlledJoints) = qDes;
     % MBSim.MBSys.dSys(1:3) = ones(3,1) * 15;
     % MBSim.MBSys.cSys(1:3) = ones(3,1) * 50;
     % MBSim.MBSys.qRef(1:3) = deg2rad([45,15,-60]);

@@ -1,5 +1,5 @@
 function pars = beamParams_mbsd_stiff_rod()
-    %% Beam parameters for the mbsd paper
+    %% Beam parameters from Herrmann and Kotyczka (2024)
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -35,14 +35,13 @@ function pars = beamParams_mbsd_stiff_rod()
 
 
     %%% Beam Material
-    % Material: Hochfestes Aluminium
+    % Material: high-strength aluminum
 
     % Density (kg/m^3)
     pars.mat.rho = 2.85e3;
 
     % Young's modulus (N/m^2)
     % https://de.wikipedia.org/wiki/Elastizit%C3%A4tsmodul#Typische_Zahlenwerte
-    % Default value set above in arguments block
     pars.mat.E = 7.2E10;
 
     % Poisson's number

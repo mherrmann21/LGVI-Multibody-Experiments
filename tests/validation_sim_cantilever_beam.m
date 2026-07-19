@@ -33,7 +33,7 @@ MBSim.visualizeSystemRefConf;
 MBSim.simPars.tEnd = 0.2;
 
 % Initial configuration
-q0 = ones(MBSim.MBSys.nDoF,1)*0;
+q0 = zeros(MBSim.MBSys.nDoF,1);
 MBSim.simPars.q0 = q0;
 MBSim.simPars.qDot0 = zeros(MBSim.MBSys.nDoF,1);
 
@@ -89,8 +89,10 @@ MBSimVI.animateSimResults("figureName", "AnimVI");
 ph_repo_path = fullfile(getRootFolder, "third-party", "ph_cosserat_rods");
 
 % HK24 results (from repo)
-resHK24 = readtable(fullfile(ph_repo_path, ...
-    "reference_results\example_02_HerrmannKotyczka2024\ex02_cantilever_reference_results.csv"));
+resHK24 = readtable(fullfile(ph_repo_path, fullfile( ...
+    "reference_results","example_02_HerrmannKotyczka2024", ...
+    "ex02_cantilever_reference_results.csv" ...
+    )));
 
 % KEB25 results
 resKEB25 = readtable(fullfile(ph_repo_path, ...
@@ -167,10 +169,6 @@ MBSimODE = MBSim;
 
 % Solver settings
 MBSimODE.solver = MBSimIntegratorODEDirect;
-MBSimODE.solver.odeObject.Solver = "ode23t";
-MBSimODE.solver.odeObject.AbsoluteTolerance = 1e-3;
-MBSimODE.solver.odeObject.RelativeTolerance = 1e-3;
-
 MBSimODE.solver.odeObject.Solver = "cvodesstiff";
 MBSimODE.solver.odeObject.RelativeTolerance = 1e-3;
 MBSimODE.solver.odeObject.AbsoluteTolerance = 1e-3;

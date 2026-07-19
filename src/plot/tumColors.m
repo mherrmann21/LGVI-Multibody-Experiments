@@ -19,7 +19,7 @@ function [colorsRGB, colorsHex] = tumColors()
     % 5 is the darkest (deep navy)
     colorsHex.TUMBlue1 = "#98C6EA"; % Pantone 283, Accent Color
     colorsHex.TUMBlue2 = "#64A0C8"; % Pantone 542, Accent Color
-    colorsHex.TUMBlue3 = "#0073CF"; % ??
+    colorsHex.TUMBlue3 = "#0073CF";
     colorsHex.TUMBlue4 = "#005293"; % Pantone 301, Secondary Color
     colorsHex.TUMBlue5 = "#003359"; % Pantone 540, Secondary Color
 
@@ -43,7 +43,7 @@ function [colorsRGB, colorsHex] = tumColors()
 
     %% RGB colors
     fields = fieldnames(colorsHex);
-    for iFld = 1:length(fields)
+    for iFld = 1:numel(fields)
         colChar = char(colorsHex.(fields{iFld}));
         colorsRGB.(fields{iFld}) = hex2dec(colChar([2:3;4:5;6:7])).' ./255;
     end

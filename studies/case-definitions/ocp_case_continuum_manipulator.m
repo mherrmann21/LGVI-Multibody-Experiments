@@ -32,7 +32,6 @@ function caseDef = ocp_case_continuum_manipulator
     OCP.nInputSplinePoints = 40;
 
     % Desired TCP pose
-    OCP.x_TCP_F = [0.1; 0.1; links(1).L];
     OCP.x_TCP_F = [0.2; 0.3; 0.4];
     OCP.R_TCP_F = []; % Rotation arbitrary
 

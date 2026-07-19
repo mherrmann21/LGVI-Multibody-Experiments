@@ -9,7 +9,7 @@ function colors = tumBlueMap(n)
     % Technical University of Munich
 
     arguments (Input)
-        % Nr. of colors to output
+        % Number of colors to output
         n (1,1) double {mustBeInteger, mustBePositive} = 10;
     end
     arguments (Output)

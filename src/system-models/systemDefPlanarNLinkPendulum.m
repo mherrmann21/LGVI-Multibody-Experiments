@@ -1,5 +1,5 @@
 function links = systemDefPlanarNLinkPendulum(opts)
-    %% Define MBS System: Planar two-link manipulator
+    %% Define MBS system: planar N-link pendulum
     % similar to Sec. 5.2.2 in [Obe08] (2-link case), and
     % J. Brüdigam, S. Sosnowski, Z. Manchester, and S. Hirche,
     % "Variational integrators and graph-based solvers for multibody

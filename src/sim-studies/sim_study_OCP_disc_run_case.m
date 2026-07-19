@@ -387,8 +387,8 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
             resultsArr(ih, iInt).uErrorMax  = max(vecnorm(u_ref_c - u_comp,2,1));
 
             % Error norm / discrete L2 norm based on the Frobenius matrix norm
-            resultsArr(ih, iInt).qErrorNorm = norm(abs(q_comp - q_ref_c))*sqrt(hComp);
-            resultsArr(ih, iInt).uErrorNorm = norm(abs(u_comp - u_ref_c))*sqrt(hComp);
+            resultsArr(ih, iInt).qErrorNorm = norm(abs(q_comp - q_ref_c), 'fro')*sqrt(hComp);
+            resultsArr(ih, iInt).uErrorNorm = norm(abs(u_comp - u_ref_c), 'fro')*sqrt(hComp);
 
             if saveResults
                 saveFigureArray(fh_T, saveDir, "saveFig", true, "saveJPEG", true);
@@ -584,7 +584,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         coeff = res.uErrorM(hIndex,discIndex) / hVec(hIndex)^4;
         loglog(hVec,  (coeff * hVec.^4), "--");
         legend([discNames, ...
-            sprintf("$%.2f h^{%.1f}$", conv_q(iDiscPlot).a, conv_q(iDiscPlot).b) ...
+            sprintf("$%.2f h^{%.1f}$", conv_u(iDiscPlot).a, conv_u(iDiscPlot).b) ...
             sprintf("$%.2f h^{%.1f}$", coeff, 4) ...
             ], ...
             "Interpreter", "latex", "location", "best");

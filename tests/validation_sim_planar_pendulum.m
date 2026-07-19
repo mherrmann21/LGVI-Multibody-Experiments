@@ -24,7 +24,7 @@ MBSim.visualizeSystemRefConf;
 MBSim.simPars.tEnd = 5;
 
 % Initial configuration
-q0 = ones(MBSim.MBSys.nDoF,1)*0;
+q0 = zeros(MBSim.MBSys.nDoF,1);
 MBSim.simPars.q0 = q0;
 MBSim.simPars.qDot0 = zeros(MBSim.MBSys.nDoF,1);
 

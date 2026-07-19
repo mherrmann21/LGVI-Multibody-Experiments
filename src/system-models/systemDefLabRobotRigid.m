@@ -16,9 +16,6 @@ function links = systemDefLabRobotRigid(opts)
     %% Define link geometry
 
     % Link lengths
-    % l(1) = 0.2;
-    % l(2) = 0.5;
-    % l(3) = 0.5;
     l = opts.l;
 
     % Constant transformations in the joints
@@ -61,7 +58,7 @@ function links = systemDefLabRobotRigid(opts)
     for iLink = 1:nLinks
         if iLink == 1
             % First body in the chain: Only transformation from
-            % joint attachement
+            % joint attachment
             g_J_ref(:,:,iLink) = g_J_const(:,:,iLink) * g_J1_COM(:,:,iLink);
         else
             g_J_ref(:,:,iLink) = g_COM_J2(:,:,iLink-1) * g_J_const(:,:,iLink) * g_J1_COM(:,:,iLink);

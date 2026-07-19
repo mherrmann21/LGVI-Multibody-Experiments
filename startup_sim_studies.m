@@ -1,10 +1,10 @@
-%% Startup File: Add file paths and check important dependencies
+%% Startup file: add repository paths and check important dependencies
 
-% Absolute file path of this function
-funPath = mfilename("fullpath");
+% Absolute path of this startup script
+startupPath = mfilename("fullpath");
 
-% Get the directory of the function = repository root path
-rootPath = fileparts(funPath);
+% The script is located in the repository root
+rootPath = fileparts(startupPath);
 
 % Add important paths
 addpath(genpath(fullfile(rootPath, "src")));
