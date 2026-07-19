@@ -12,7 +12,7 @@ This repository contains the numerical experiments on time integration and optim
 In the experiments, various common ODE integrators for nonstiff and stiff systems are compared to a Lie-group variational integrator in terms of numerical properties and computational efficiency.
 The implementation is based on the MATLAB toolbox [ELARA](https://github.com/ELARA-Toolbox/ELARA), which must be installed and available on the MATLAB path.
 
-## Multibody Simulation Experiments
+### Multibody Simulation Experiments
 
 1. Free motion of a planar four-link pendulum
 2. Nonlinear oscillations of a geometrically exact cantilever beam (modeled as a Kirchhoff beam); this is the same case also treated in [2, 3]
@@ -20,7 +20,7 @@ The implementation is based on the MATLAB toolbox [ELARA](https://github.com/ELA
 
 The first two simulation cases are each analyzed both with and without dissipation.
 
-## Optimal Control Experiments
+### Optimal Control Experiments
 
 1. Rest-to-rest motion of a planar robot manipulator (after [4])
 2. TCP trajectory tracking of a three-DOF robot manipulator
