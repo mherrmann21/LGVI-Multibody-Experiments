@@ -1,3 +1,6 @@
 [submodule "third-party/crameri"]
 	path = third-party/crameri
 	url = https://github.com/chadagreene/crameri.git
+[submodule "third-party/ph_cosserat_rods"]
+	path = third-party/ph_cosserat_rods
+	url = https://github.com/plkinon/ph_cosserat_rods.git

@@ -9,6 +9,7 @@ rootPath = fileparts(funPath);
 % Add important paths
 addpath(genpath(fullfile(rootPath, "src")));
 addpath(genpath(fullfile(rootPath, "studies")));
+addpath(genpath(fullfile(rootPath, "tests")));
 addpath(genpath(fullfile(rootPath, "third-party")));
 
 % Check if ELARA toolbox is available on the path

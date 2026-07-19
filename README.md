@@ -25,7 +25,7 @@ The first two simulation cases are each analyzed both with and without dissipati
 2. TCP trajectory tracking of a three-DOF robot manipulator
 3. TCP trajectory tracking of a tendon-driven continuum manipulator
 
-## How to Run
+## Running the Simulation Studies
 
 1. Make sure the `mex` files in the toolbox have been built correctly (run `elara.build` and check with `elara.setup`)
 
@@ -39,6 +39,12 @@ The first two simulation cases are each analyzed both with and without dissipati
 
 4. Run the evaluation scripts to generate the output plots.
 Adjust the system, dissipation case, and data file paths in the script settings.
+
+### Additional Scripts
+
+Under `/tests`, there are two additional validation scripts that perform simulations of the four-link pendulum and the cantilever beam of the integrator study.
+Additionally, `validation_sim_cantilever_beam.m` compares the simulation results to the literature results from [3].
+
 
 ## Requirements
 
@@ -56,6 +62,8 @@ The code is tested on Windows 11.
 * This repository includes the RADAU integrator implemented by Denis Bichsel. It is originally available [here](https://www.unige.ch/~hairer/software.html).
 
 * The [MATLAB version](https://github.com/chadagreene/crameri) of the scientific color maps [Crameri](https://www.fabiocrameri.ch/colourmaps/) is included as a submodule.
+
+* The [PHCosseratRods](https://github.com/plkinon/ph_cosserat_rods/) repository (corresponding to [3]) is included as submodule for validation and comparison of the cantilever beam simulation case.
 
 ### Installing the HSL linear solvers for IPOPT
 
