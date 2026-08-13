@@ -13,7 +13,7 @@ close all
 %% Define System
 
 link  = systemDefCantileverBeamHK24("d", 0);
-MBSim = MBSimulation(link, "displayInfo", true);
+MBSim = elara.Simulation(link, "displayInfo", true);
 
 % Align beam with global x axis
 R0 = [
@@ -21,7 +21,7 @@ R0 = [
     0  1 0
     -1 0 0
     ];
-MBSim.MBSys.g0 = SE3Matrix(R0, zeros(3,1));
+MBSim.system.g0 = elara.SE3.matrix(R0, zeros(3,1));
 
 % Visualize reference configuration
 MBSim.visualizeSystemRefConf;
@@ -30,26 +30,26 @@ MBSim.visualizeSystemRefConf;
 %% Specify Simulation Parameters
 
 % End time
-MBSim.simPars.tEnd = 0.2;
+MBSim.parameters.tEnd = 0.2;
 
 % Initial configuration
-q0 = zeros(MBSim.MBSys.nDoF,1);
-MBSim.simPars.q0 = q0;
-MBSim.simPars.qDot0 = zeros(MBSim.MBSys.nDoF,1);
+q0 = zeros(MBSim.system.nDoF,1);
+MBSim.parameters.q0 = q0;
+MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
 % Visualize initial config
 MBSim.visualizeSystemConfig(q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
 % No gravity
-MBSim.simPars.g = 0;
+MBSim.parameters.g = 0;
 
 % External forces (at beam tip)
 fMax = [0.5 0 0 0 2 2 ]' * 0.5;  % Max. force
 fTEnd = 0.05;                    % Force impulse end time
 
-fNodes = [zeros(6,link.nSeg-1),fMax];
-MBSim.simPars.extWrench_s = MBSim.simPars.extWrench_s.addWrench( ...
+fNodes = [zeros(6,link.nSegments-1),fMax];
+MBSim.parameters.externalWrench_s = MBSim.parameters.externalWrench_s.addWrench( ...
     0, fTEnd, 4, fNodes);
 
 
@@ -62,11 +62,11 @@ MBSimVI = MBSim;
 % -15 without dissipation
 
 % Solver settings
-MBSimVI.solver = MBSimIntegratorVarIntBroyden;
-MBSimVI.solver.h = 2^-15;
-MBSimVI.solver.JacobianIterationThreshold = 5;
-MBSimVI.solver.errorMargin = 1e-10;
-MBSimVI.solver.aTrapez = 1/2; % Irrelevant for conservative case
+MBSimVI.integrator = elara.integration.VIBroyden;
+MBSimVI.integrator.h = 2^-15;
+MBSimVI.integrator.JacobianIterationThreshold = 5;
+MBSimVI.integrator.tolerance = 1e-10;
+MBSimVI.integrator.useFirstOrderDissipation = false; % Irrelevant for conservative case
 
 % Start integration
 MBSimVI = MBSimVI.simulateSystem;
@@ -74,7 +74,7 @@ MBSimVI = MBSimVI.simulateSystem;
 % Plotting
 MBSimVI.plotAll;
 MBSimVI = MBSimVI.computeEnergies;
-plotEnergies(MBSimVI.simRes);
+elara.plot.energies(MBSimVI.results);
 
 % Animate results
 MBSimVI.animateSimResults("figureName", "AnimVI");
@@ -106,7 +106,7 @@ nexttile;
 plot(resHK24.time, resHK24.tip_velocity_B_2, "LineWidth", 2);
 hold on;
 plot(resKEB25.time, resKEB25.tip_velocity_B_2, "-.", "LineWidth", 2);
-plot(MBSimVI.simRes.tout, squeeze(MBSimVI.simRes.eta(4,end,:)), "--", "LineWidth", 2);
+plot(MBSimVI.results.tout, squeeze(MBSimVI.results.eta(4,end,:)), "--", "LineWidth", 2);
 xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("$\eta_4$ in m/s", "Interpreter", "latex");
 grid on;
@@ -116,7 +116,7 @@ nexttile;
 plot(resHK24.time, -resHK24.tip_velocity_B_1, "LineWidth", 2);
 hold on;
 plot(resKEB25.time, -resKEB25.tip_velocity_B_1, "-.", "LineWidth", 2);
-plot(MBSimVI.simRes.tout, squeeze(MBSimVI.simRes.eta(5,end,:)), "--", "LineWidth", 2);
+plot(MBSimVI.results.tout, squeeze(MBSimVI.results.eta(5,end,:)), "--", "LineWidth", 2);
 xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("$\eta_5$ in m/s", "Interpreter", "latex");
 grid on;
@@ -125,7 +125,7 @@ nexttile;
 plot(resHK24.time, resHK24.tip_velocity_B_3, "LineWidth", 2);
 hold on;
 plot(resKEB25.time, resKEB25.tip_velocity_B_3, "-.", "LineWidth", 2);
-plot(MBSimVI.simRes.tout, squeeze(MBSimVI.simRes.eta(6,end,:)), "--", "LineWidth", 2);
+plot(MBSimVI.results.tout, squeeze(MBSimVI.results.eta(6,end,:)), "--", "LineWidth", 2);
 xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("$\eta_6$ in m/s", "Interpreter", "latex");
 grid on;
@@ -138,7 +138,7 @@ nexttile;
 plot(resHK24.time, resHK24.tip_position_I_1, "LineWidth", 2);
 hold on;
 plot(resKEB25.time, resKEB25.tip_position_I_1, "-.", "LineWidth", 2);
-plot(MBSimVI.simRes.tout, squeeze(MBSimVI.simRes.g(1,4,end,:)), "--", "LineWidth", 2);
+plot(MBSimVI.results.tout, squeeze(MBSimVI.results.g(1,4,end,:)), "--", "LineWidth", 2);
 xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("$x$ in m", "Interpreter", "latex");
 grid on;
@@ -148,7 +148,7 @@ nexttile;
 plot(resHK24.time, resHK24.tip_position_I_2, "LineWidth", 2);
 hold on;
 plot(resKEB25.time, resKEB25.tip_position_I_2, "-.", "LineWidth", 2);
-plot(MBSimVI.simRes.tout, squeeze(MBSimVI.simRes.g(2,4,end,:)), "--", "LineWidth", 2);
+plot(MBSimVI.results.tout, squeeze(MBSimVI.results.g(2,4,end,:)), "--", "LineWidth", 2);
 xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("$y$ in m", "Interpreter", "latex");
 grid on;
@@ -157,7 +157,7 @@ nexttile;
 plot(resHK24.time, resHK24.tip_position_I_3, "LineWidth", 2);
 hold on;
 plot(resKEB25.time, resKEB25.tip_position_I_3, "-.", "LineWidth", 2);
-plot(MBSimVI.simRes.tout, squeeze(MBSimVI.simRes.g(3,4,end,:)), "--", "LineWidth", 2);
+plot(MBSimVI.results.tout, squeeze(MBSimVI.results.g(3,4,end,:)), "--", "LineWidth", 2);
 xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("$z$ in m", "Interpreter", "latex");
 grid on;
@@ -168,10 +168,10 @@ grid on;
 MBSimODE = MBSim;
 
 % Solver settings
-MBSimODE.solver = MBSimIntegratorODEDirect;
-MBSimODE.solver.odeObject.Solver = "cvodesstiff";
-MBSimODE.solver.odeObject.RelativeTolerance = 1e-3;
-MBSimODE.solver.odeObject.AbsoluteTolerance = 1e-3;
+MBSimODE.integrator = elara.integration.ODEDirect;
+MBSimODE.integrator.odeObject.Solver = "cvodesstiff";
+MBSimODE.integrator.odeObject.RelativeTolerance = 1e-3;
+MBSimODE.integrator.odeObject.AbsoluteTolerance = 1e-3;
 
 % Start integration
 MBSimODE = MBSimODE.simulateSystem;
@@ -179,7 +179,7 @@ MBSimODE = MBSimODE.simulateSystem;
 % Plotting
 MBSimODE.plotAll;
 MBSimODE = MBSimODE.computeEnergies;
-plotEnergies(MBSimODE.simRes);
+elara.plot.energies(MBSimODE.results);
 
 % Animate results
 MBSimODE.animateSimResults("figureName", "AnimODE");
@@ -187,9 +187,9 @@ MBSimODE.animateSimResults("figureName", "AnimODE");
 
 %% Validate integration with radau
 
-MBSimODE.solver = MBSimIntegratorODEDirectFunctionBased;
-MBSimODE.solver.solverFunction = @radau;
-MBSimODE.solver.solverOptions = rdpset('RelTol',1e-3, 'AbsTol', 1e-3);
+MBSimODE.integrator = elara.integration.ODEDirectFunctionBased;
+MBSimODE.integrator.solverFunction = @radau;
+MBSimODE.integrator.solverOptions = rdpset('RelTol',1e-3, 'AbsTol', 1e-3);
 
 % Start integration
 MBSimODE = MBSimODE.simulateSystem;
@@ -197,7 +197,7 @@ MBSimODE = MBSimODE.simulateSystem;
 % Plotting
 MBSimODE.plotAll;
 MBSimODE = MBSimODE.computeEnergies;
-plotEnergies(MBSimODE.simRes);
+elara.plot.energies(MBSimODE.results);
 
 % Animate results
 MBSimODE.animateSimResults("figureName", "AnimODE");

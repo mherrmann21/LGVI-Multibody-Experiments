@@ -62,7 +62,7 @@ In addition, `validation_sim_cantilever_beam.m` compares the simulation results 
 ## Requirements
 
 * MATLAB R2025b
-* [ELARA](https://github.com/ELARA-Toolbox/ELARA) Toolbox, V0.1 (installed and available on the MATLAB path)
+* [ELARA](https://github.com/ELARA-Toolbox/ELARA) Toolbox, 0.2 (installed and available on the MATLAB path)
 * [CasADi](https://web.casadi.org/) V3.7.2 (only for the optimal control experiments; must be installed and available on the MATLAB path)
 * [Coin-HSL linear solvers](https://licences.stfc.ac.uk/product/coin-hsl) for IPOPT (version 2024.05.15)
 

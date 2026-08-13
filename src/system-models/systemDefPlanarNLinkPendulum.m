@@ -18,10 +18,10 @@ function links = systemDefPlanarNLinkPendulum(opts)
     l = 1;
 
     % Transformations from joint 1 -> joint 2 in each (serial) link
-    g_J1_J2  = SE3Matrix(eye(3), [l,0,0]);
+    g_J1_J2  = elara.SE3.matrix(eye(3), [l,0,0]);
 
     % Transformations from joint 1 -> COM in each (serial) link
-    g_J1_COM = SE3Matrix(eye(3), [l/2,0,0]);
+    g_J1_COM = elara.SE3.matrix(eye(3), [l/2,0,0]);
 
     % Transformations from COM -> joint 2
     g_COM_J2 = g_J1_COM \ g_J1_J2;
@@ -46,7 +46,7 @@ function links = systemDefPlanarNLinkPendulum(opts)
 
     %% Create link objects
 
-    links = createArray(nLinks,1,"MBLinkDefinitionRigid");
+    links = createArray(nLinks, 1, "elara.RigidLink");
 
     for iLink = 1:nLinks
         if iLink == 1
@@ -57,7 +57,7 @@ function links = systemDefPlanarNLinkPendulum(opts)
             links(iLink).g_ref      = g_J_ref_i;
         end
 
-        links(iLink).isActuated = 1;
+        links(iLink).jointIsActuated = true;
         links(iLink).jointAxis  = [0 1 0 0 0 0];
         links(iLink).g_J_B      = g_J1_COM;
         links(iLink).m          = m;

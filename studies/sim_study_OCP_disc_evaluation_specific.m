@@ -15,7 +15,7 @@ close all
 % 1 = contManip
 % 3 = planar Manip
 SYSTEM_MDL = 3;
-SAVE_PLOTS = false;
+SAVE_PLOTS = true;
 
 % Directory where all result subfolders are
 resultsDir = fullfile(getRootFolder, "results", "runs");
@@ -33,7 +33,7 @@ switch SYSTEM_MDL
         subFolder = "260313_1115_simStudy_ocp_discretization__system_1";
         plotSaveSubFolder = "ocp_simstudy_contManip";
     case 3
-        subFolder = "260718_0038_simStudy_ocp_discretization__system_3";
+        subFolder = "260813_1140_simStudy_ocp_discretization__system_3";
         plotSaveSubFolder = "ocp_simstudy_planarManip";
     otherwise
         error("Not defined.");
@@ -86,12 +86,12 @@ pdfAspectRatioDefault = 1.5;
 
 if SYSTEM_MDL == 3
     MBSim = simStudyRes.MBSimOCPRef;
-    qVis = deg2rad([-45,-90]);
+    qVis = deg2rad([-45;-90]);
 
     % Compute joint positions for text
     xJoints = zeros(3,length(qVis));
-    gVis = MBSim.MBSys.computeFwdKin(qVis);
-    for iLink = 1:MBSim.MBSys.nLinks
+    gVis = MBSim.system.computeFwdKin(qVis);
+    for iLink = 1:MBSim.system.nLinks
         gJoint = gVis(:,:,iLink)/MBSim.links(iLink).g_J_B;
         xJoints(:,iLink) = gJoint(1:3,4);
     end
@@ -106,13 +106,13 @@ if SYSTEM_MDL == 3
 
     % System Visualization
     colorMapFun = @(x) crameri("nuuk", x+1);
-    fhVis = init3Dplot( ...
+    fhVis = elara.visualization.initializeAxes( ...
         "Name", "system visualization", ...
         "NumberTitle", "off", "Theme", "Light");
     [~, vis] = MBSim.visualizeSystemConfig( qVis,...
         "createFigure", false, "linkColorMap", colorMapFun);
 
-    for iLink = 1:MBSim.MBSys.nLinks
+    for iLink = 1:MBSim.system.nLinks
         text(xJoints(1,iLink), xJoints(2,iLink), xJoints(3,iLink), ...
             sprintf("$q_%d$", iLink), "Interpreter", "latex", ...
             "FontSize", 11);
@@ -123,14 +123,14 @@ if SYSTEM_MDL == 3
     zlim([-0.1, 1.5]);
     axis off;
 
-    vis.cSysI.Scale = 0.35;
-    vis.cSysI.LabelFontSize = 12;
-    vis.cSysI.Name = "";
+    vis.coordSysI.Scale = 0.35;
+    vis.coordSysI.LabelFontSize = 12;
+    vis.coordSysI.Name = "";
 
-    for iLink = 1:MBSim.MBSys.nLinks
-        vis.linkVis(iLink).cSysJ.Visible = false;
-        vis.linkVis(iLink).cSysRef.Scale = 0.2;
-        vis.linkVis(iLink).cSysRef.Name = "";
+    for iLink = 1:MBSim.system.nLinks
+        vis.linkVisualization(iLink).coordSysJ.Visible = false;
+        vis.linkVisualization(iLink).coordSysRef.Scale = 0.2;
+        vis.linkVisualization(iLink).coordSysRef.Name = "";
     end
     view(38, 12);
     %circular_arrow(fhVis, 0.3, [0.5,-0.1], 5, 5, 1)
@@ -147,18 +147,18 @@ end
 
 if SYSTEM_MDL == 0
     MBSim = simStudyRes.MBSimOCPRef;
-    qVis = deg2rad([30, -35, 70]);
+    qVis = deg2rad([30; -35; 70]);
 
     % Compute joint positions for text
     xJoints = zeros(3,length(qVis));
-    gVis = MBSim.MBSys.computeFwdKin(qVis);
-    for iLink = 1:MBSim.MBSys.nLinks
+    gVis = MBSim.system.computeFwdKin(qVis);
+    for iLink = 1:MBSim.system.nLinks
         gJoint = gVis(:,:,iLink)/MBSim.links(iLink).g_J_B;
         xJoints(:,iLink) = gJoint(1:3,4);
     end
 
     % Compute TCP position
-    g_TCP = gVis(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+    g_TCP = gVis(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
     x_TCP = g_TCP(1:3,4);
 
     % Text offset for each joint (column for each joint)
@@ -171,13 +171,13 @@ if SYSTEM_MDL == 0
 
     % System Visualization
     colorMapFun = @(x) crameri("nuuk", x+1);
-    fhVis = init3Dplot( ...
+    fhVis = elara.visualization.initializeAxes( ...
         "Name", "system visualization", ...
         "NumberTitle", "off", "Theme", "Light");
     [~, vis] = MBSim.visualizeSystemConfig( qVis,...
         "createFigure", false, "linkColorMap", colorMapFun);
 
-    for iLink = 1:MBSim.MBSys.nLinks
+    for iLink = 1:MBSim.system.nLinks
         text(xJoints(1,iLink), xJoints(2,iLink), xJoints(3,iLink), ...
             sprintf("$q_%d$", iLink), "Interpreter", "latex", ...
             "FontSize", 11);
@@ -191,16 +191,16 @@ if SYSTEM_MDL == 0
     zlim([-0.1, 1.15]);
     axis off;
 
-    vis.cSysI.Scale = 0.25;
-    vis.cSysI.LabelFontSize = 12;
-    vis.cSysI.Name = "";
+    vis.coordSysI.Scale = 0.25;
+    vis.coordSysI.LabelFontSize = 12;
+    vis.coordSysI.Name = "";
 
-    for iLink = 1:MBSim.MBSys.nLinks
-        vis.linkVis(iLink).cSysJ.Visible = false;
-        vis.linkVis(iLink).cSysRef.Scale = 0.15;
-        vis.linkVis(iLink).cSysRef.Name = "";
+    for iLink = 1:MBSim.system.nLinks
+        vis.linkVisualization(iLink).coordSysJ.Visible = false;
+        vis.linkVisualization(iLink).coordSysRef.Scale = 0.15;
+        vis.linkVisualization(iLink).coordSysRef.Name = "";
     end
-    vis.linkVis(end).cSysTCP.h_nameLabel.Visible = "off";
+    vis.linkVisualization(end).coordSysTCP.h_nameLabel.Visible = "off";
     view(45, 30);
 
     if SAVE_PLOTS
@@ -215,15 +215,15 @@ end
 
 if SYSTEM_MDL == 1
     MBSim = simStudyRes.MBSimOCPRef;
-    qVis = zeros(MBSim.MBSys.nDoF,1);
+    qVis = zeros(MBSim.system.nDoF,1);
 
     % Compute TCP position
-    gVis = MBSim.MBSys.computeFwdKin(qVis);
-    g_TCP = gVis(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+    gVis = MBSim.system.computeFwdKin(qVis);
+    g_TCP = gVis(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
     x_TCP = g_TCP(1:3,4);
 
     % System Visualization
-    fhVis = init3Dplot( ...
+    fhVis = elara.visualization.initializeAxes( ...
         "Name", "system visualization", ...
         "NumberTitle", "off", "Theme", "Light");
     [~, vis] = MBSim.visualizeSystemConfig( qVis,...
@@ -237,13 +237,13 @@ if SYSTEM_MDL == 1
     zlim([0, 0.6]);
     axis off;
 
-    vis.cSysI.Scale = 0.15;
-    vis.cSysI.LabelFontSize = 12;
-    vis.cSysI.Name = "";
-    vis.cSysI.h_axisLabels(3).Position(1) = 0.06;
+    vis.coordSysI.Scale = 0.15;
+    vis.coordSysI.LabelFontSize = 12;
+    vis.coordSysI.Name = "";
+    vis.coordSysI.h_axisLabels(3).Position(1) = 0.06;
 
-    vis.linkVis(1).cSysJ.Visible = false;
-    vis.linkVis(1).cSysTCP.h_nameLabel.Visible = "off";
+    vis.linkVisualization(1).coordSysJ.Visible = false;
+    vis.linkVisualization(1).coordSysTCP.h_nameLabel.Visible = "off";
     view(135, 45);
 
     if SAVE_PLOTS
@@ -257,7 +257,7 @@ end
 
 if 1% SYSTEM_MDL == 3
     MBSim = simStudyRes.MBSimOCPRef;
-    fhSS = init3Dplot( ...
+    fhSS = elara.visualization.initializeAxes( ...
         "Name", "snapshots", ...
         "NumberTitle", "off", "Theme", "Light");
 
@@ -276,7 +276,7 @@ if 1% SYSTEM_MDL == 3
         % Coordinate frame for inertial frame
         % Shift slightly in negative y direction to place text labels on top of
         % other plot stuff
-        coordSysSE3(SE3Matrix(eye(3), [0,-0.15,0]), "Scale", 0.5, "Name", "", "LabelFontSize", 12, ...
+        elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), [0,-0.15,0]), "Scale", 0.5, "Name", "", "LabelFontSize", 12, ...
             "AxisColors", repmat(lines(1), [3,1]));
 
         text(0.2, 0, -2, ...
@@ -297,10 +297,10 @@ if 1% SYSTEM_MDL == 3
 
         % Inertial frame
         if SYSTEM_MDL == 0
-            coordSysSE3(eye(4), "Scale", 0.4, "Name", "", "LabelFontSize", 12, ...
+            elara.visualization.CoordinateFrame(eye(4), "Scale", 0.4, "Name", "", "LabelFontSize", 12, ...
                 "AxisColors", repmat(lines(1), [3,1]));
         else
-            cSysI = coordSysSE3(eye(4), "Scale", 0.15, "Name", "", "LabelFontSize", 12, ...
+            cSysI = elara.visualization.CoordinateFrame(eye(4), "Scale", 0.15, "Name", "", "LabelFontSize", 12, ...
                 "AxisColors", repmat(lines(1), [3,1]));
             cSysI.h_axisLabels(3).Position(1:2) = -0.025;
         end
@@ -381,7 +381,7 @@ colors3 = [
 
 
 OCPRef = simStudyRes.OCPRef;
-for iC = 1%:2
+for iC = 1:numel(plotData)
     plotDof = 1:size(plotData{iC},1); % which qs to plot as joint angles
     fhs_jointAngles = figure(...
         "Name", sprintf("ref_sol_data_%d", iC), ...
@@ -409,10 +409,10 @@ for iC = 1%:2
     grid on;
     ax.TickLabelInterpreter = "latex";
     axis padded;
-    xlim(MBSim.simRes.tout([1,end]));
+    xlim(MBSim.results.tout([1,end]));
     if SYSTEM_MDL == 1 && iC == 1
-        % colors = repmat(crameri('roma',MBSim.MBSys.nDoF), [3,1]);
-        colors = tumBlueMap(MBSim.MBSys.nDoF);
+        % colors = repmat(crameri('roma',MBSim.system.nDoF), [3,1]);
+        colors = tumBlueMap(MBSim.system.nDoF);
     else
         % colors = repmat(crameri('romaO',4+1), [3,1]);
         colors = colors3;
@@ -475,7 +475,7 @@ for iC = 1%:2
     xlabel("time $t$ in s", "Interpreter", "latex");
     ax.TickLabelInterpreter = "latex";
     axis padded;
-    xlim(MBSim.simRes.tout([1,end]));
+    xlim(MBSim.results.tout([1,end]));
     if SYSTEM_MDL == 0
         %ylim([-30, 25]);
     end
@@ -500,8 +500,8 @@ if SYSTEM_MDL ~= 3
     % Compute Ref. actual TCP trajectory
     g_TCP_sol = zeros(4,4, OCPRef.nSteps+1);
     for iStep = 1:OCPRef.nSteps+1
-        g_k = MBSim.MBSys.computeFwdKin(simStudyRes.q_ref(:,iStep));
-        g_TCP_sol(:,:,iStep) = g_k(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+        g_k = MBSim.system.computeFwdKin(simStudyRes.q_ref(:,iStep));
+        g_TCP_sol(:,:,iStep) = g_k(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
     end
     x_TCP_sol = squeeze(g_TCP_sol(1:3,4,:));
     x_dot_TCP_sol = diff2ndOrder(x_TCP_sol, OCPRef.h);

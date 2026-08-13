@@ -14,7 +14,7 @@ close all
 % 0 = Pendulum
 % 1 = Cantilever beam HK24
 % 2 = Rigid-Flexible Robot
-SYSTEM_MDL = 0;
+SYSTEM_MDL = 2;
 
 SAVE_PLOTS = true;
 
@@ -28,20 +28,15 @@ plotSaveDir = fullfile(getRootFolder, "results", "plots", "time-integration");
 % Subfolder names
 switch SYSTEM_MDL
     case 0
-        %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0";
-        %subFolder(2) = "260212_1157_simStudy_integrators__system_0_dissip_1";
-        subFolder(1) = "260719_1835_simStudy_integrators__system_0_dissip_0";
-        subFolder(2) = "260719_1838_simStudy_integrators__system_0_dissip_1";
+        subFolder(1) = "260813_1104_simStudy_integrators__system_0_dissip_0";
+        subFolder(2) = "260813_1106_simStudy_integrators__system_0_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_rigid";
     case 1
-        % subFolder(1) = "260212_1455_simStudy_integrators__system_1_dissip_0";
-        % subFolder(2) = "260212_1554_simStudy_integrators__system_1_dissip_1";
-        subFolder(1) = "260716_1631_simStudy_integrators__system_1_dissip_0";
-        subFolder(2) = "260716_1631_simStudy_integrators__system_1_dissip_1";
+        subFolder(1) = "260813_1110_simStudy_integrators__system_1_dissip_0";
+        subFolder(2) = "260813_1132_simStudy_integrators__system_1_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_flexible";
     case 2
-        %subFolder = "260224_1428_simStudy_integrators__system_2_dissip_1";
-        subFolder = "260716_1634_simStudy_integrators__system_2_dissip_1";
+        subFolder = "260813_1136_simStudy_integrators__system_2_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_combined";
     otherwise
         error("Not defined.");
@@ -485,11 +480,11 @@ for iC = 1:nCases
 
                 % Find parameter ID for target tolerance
                 pID = find(simStudyRes(iC).intDef(iInt).ParamVec == tolTarget);
-                hODE = diff(simStudyRes(iC).res(iInt).MBSimObj(pID).simRes.tout);
+                hODE = diff(simStudyRes(iC).res(iInt).MBSimObj(pID).results.tout);
                 hODE(end+1) = nan;
                 % Plot
                 semilogy( ...
-                    simStudyRes(iC).res(iInt).MBSimObj(pID).simRes.tout, ...
+                    simStudyRes(iC).res(iInt).MBSimObj(pID).results.tout, ...
                     hODE, ...
                     "DisplayName", simStudyRes(iC).intDef(iInt).Name, ...
                     "Color", pOpts.intColors(intID, :), ...
@@ -527,7 +522,7 @@ for iC = 1:nCases
     ax_hODE_time.TickLabelInterpreter = "latex";
 
     % Axis settings
-    ax_hODE_time.XLim = [0,simStudyRes(iC).res(iInt).MBSimObj(pID).simPars.tEnd];
+    ax_hODE_time.XLim = [0,simStudyRes(iC).res(iInt).MBSimObj(pID).parameters.tEnd];
     switch SYSTEM_MDL
         case 0
             ax_hODE_time.YLim = [1e-4, 0.04];
@@ -565,7 +560,7 @@ for iC = 1:nCases
 
                 hMean = zeros(length(simStudyRes(iC).intDef(iInt).ParamVec),1);
                 for iParam = 1:length(hMean)
-                    hMean(iParam) = mean(diff(simStudyRes(iC).res(iInt).MBSimObj(iParam).simRes.tout));
+                    hMean(iParam) = mean(diff(simStudyRes(iC).res(iInt).MBSimObj(iParam).results.tout));
                 end
                 loglog(ax_hMean_tol, simStudyRes(iC).intDef(iInt).ParamVec, hMean, ...
                     "DisplayName", simStudyRes(iC).intDef(iInt).Name, ...
@@ -655,7 +650,7 @@ switch SYSTEM_MDL
         tCompTarget = 1.0;
 
         E_compInts = ["VI-T", "ode15s", "ode23t", "RADAU", "CVODE-S"];
-        E_tEnd = simStudyRes(1).MBSimRef.simPars.tEnd(end);
+        E_tEnd = simStudyRes(1).MBSimRef.parameters.tEnd(end);
 end
 
 res_ref_H = cell(nCases,1);
@@ -666,14 +661,14 @@ res_comp_t = cell(nCases, length(E_compInts));
 for iC = 1:nCases
     % Simulate reference sim
     fprintf("\nEnergy comparison: Starting reference simulation...\n\n");
-    simStudyRes(iC).MBSimRef.simPars.tEnd = E_tEnd;
+    simStudyRes(iC).MBSimRef.parameters.tEnd = E_tEnd;
     simStudyRes(iC).MBSimRef = simStudyRes(iC).MBSimRef.simulateSystem;
     simStudyRes(iC).MBSimRef = simStudyRes(iC).MBSimRef.computeEnergies;
-    res_ref_H{iC} = simStudyRes(iC).MBSimRef.simRes.energies.H;
-    res_ref_t{iC} = simStudyRes(iC).MBSimRef.simRes.tout;
+    res_ref_H{iC} = simStudyRes(iC).MBSimRef.results.totalEnergy;
+    res_ref_t{iC} = simStudyRes(iC).MBSimRef.results.tout;
 
     % Delete simulation results to free memory
-    simStudyRes(iC).MBSimRef.simRes = MBSimResults;
+    simStudyRes(iC).MBSimRef.results = elara.SimulationResults;
 
     % Simulate comparison integrators
 
@@ -693,14 +688,14 @@ for iC = 1:nCases
 
             % Simulate system with longer end time
             MBSimEC = simStudyRes(iC).res(intIDDef).MBSimObj(caseID);
-            MBSimEC.simPars.tEnd = E_tEnd;
-            MBSimEC.solver.accurateTiming = false;
+            MBSimEC.parameters.tEnd = E_tEnd;
+            MBSimEC.integrator.accurateTiming = false;
             MBSimEC = MBSimEC.simulateSystem();
 
             % Compute energies
             MBSimEC = MBSimEC.computeEnergies;
-            res_comp_H{iC, iInt} = MBSimEC.simRes.energies.H;
-            res_comp_t{iC, iInt} = MBSimEC.simRes.tout;
+            res_comp_H{iC, iInt} = MBSimEC.results.totalEnergy;
+            res_comp_t{iC, iInt} = MBSimEC.results.tout;
 
             clear MBSimEC;
         end

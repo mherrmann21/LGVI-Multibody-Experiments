@@ -28,8 +28,8 @@ runOpts.resultsDir = fullfile(getRootFolder, "results", "runs");
 % Specify each case as a function handle in the cell array.
 caseDefinitionFcns = {
     @ocp_case_planar_manipulator
-    @ocp_case_rigid_robot
-    @ocp_case_continuum_manipulator
+    %@ocp_case_rigid_robot
+    %@ocp_case_continuum_manipulator
     };
 
 %% Run requested cases

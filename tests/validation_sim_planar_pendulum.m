@@ -12,7 +12,7 @@ close all
 %% Define System
 
 links = systemDefPlanarNLinkPendulum();
-MBSim = MBSimulation(links, "displayInfo", true);
+MBSim = elara.Simulation(links, "displayInfo", true);
 
 % Visualize reference configuration
 MBSim.visualizeSystemRefConf;
@@ -21,30 +21,30 @@ MBSim.visualizeSystemRefConf;
 %% Specify Simulation Parameters
 
 % End time
-MBSim.simPars.tEnd = 5;
+MBSim.parameters.tEnd = 5;
 
 % Initial configuration
-q0 = zeros(MBSim.MBSys.nDoF,1);
-MBSim.simPars.q0 = q0;
-MBSim.simPars.qDot0 = zeros(MBSim.MBSys.nDoF,1);
+q0 = zeros(MBSim.system.nDoF,1);
+MBSim.parameters.q0 = q0;
+MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
 % Visualize initial config
 MBSim.visualizeSystemConfig(q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
 % System inputs
-MBSim.simPars.uConst = zeros(MBSim.MBSys.nInputs,1);
+MBSim.parameters.uConst = zeros(MBSim.system.nInputs,1);
 
 %% Integration with variational integrator
 
 MBSimVI = MBSim;
 
 % Solver settings
-MBSimVI.solver = MBSimIntegratorVarIntBroyden;
-MBSimVI.solver.h = 2^-8;
-MBSimVI.solver.JacobianIterationThreshold = 5;
-MBSimVI.solver.errorMargin = 1e-11;
-MBSimVI.solver.aTrapez = 1/2;
+MBSimVI.integrator = elara.integration.VIBroyden;
+MBSimVI.integrator.h = 2^-8;
+MBSimVI.integrator.JacobianIterationThreshold = 5;
+MBSimVI.integrator.tolerance = 1e-11;
+MBSimVI.integrator.useFirstOrderDissipation = false;
 
 % Start integration
 MBSimVI = MBSimVI.simulateSystem;
@@ -52,7 +52,7 @@ MBSimVI = MBSimVI.simulateSystem;
 % Plotting
 MBSimVI.plotAll;
 MBSimVI = MBSimVI.computeEnergies;
-plotEnergies(MBSimVI.simRes);
+elara.plot.energies(MBSimVI.results);
 
 % Animate results
 MBSimVI.animateSimResults("figureName", "AnimVI");
@@ -63,10 +63,10 @@ MBSimVI.animateSimResults("figureName", "AnimVI");
 MBSimODE = MBSim;
 
 % Solver settings
-MBSimODE.solver = MBSimIntegratorODEDirect;
-MBSimODE.solver.odeObject.Solver = "ode45";
-MBSimODE.solver.odeObject.AbsoluteTolerance = 1e-8;
-MBSimODE.solver.odeObject.RelativeTolerance = 1e-8;
+MBSimODE.integrator = elara.integration.ODEDirect;
+MBSimODE.integrator.odeObject.Solver = "ode45";
+MBSimODE.integrator.odeObject.AbsoluteTolerance = 1e-8;
+MBSimODE.integrator.odeObject.RelativeTolerance = 1e-8;
 
 % Start integration
 MBSimODE = MBSimODE.simulateSystem;
@@ -74,7 +74,7 @@ MBSimODE = MBSimODE.simulateSystem;
 % Plotting
 MBSimODE.plotAll;
 MBSimODE = MBSimODE.computeEnergies;
-plotEnergies(MBSimODE.simRes);
+elara.plot.energies(MBSimODE.results);
 
 % Animate results
 MBSimODE.animateSimResults("figureName", "AnimODE");
