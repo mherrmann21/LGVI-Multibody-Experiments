@@ -53,21 +53,21 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
 
         % Print system info again for log
         fprintf("\n\n");
-        printLinkProperties(links);
-        printFrameProperties(MBSim.MBSys);
-        printInputProperties(MBSim.MBSys);
+        elara.internal.printLinkProperties(links);
+        elara.internal.printFrameProperties(MBSim.system);
+        elara.internal.printInputProperties(MBSim.system);
 
     end
 
     %% Specify simulation parameters
 
     % End time
-    MBSim.simPars.tEnd = tEnd;
+    MBSim.parameters.tEnd = tEnd;
 
     % Initial configuration
-    q0 = zeros(MBSim.MBSys.nDoF,1);
-    MBSim.simPars.q0 = q0;
-    MBSim.simPars.qDot0 = zeros(MBSim.MBSys.nDoF,1);
+    q0 = zeros(MBSim.system.nDoF,1);
+    MBSim.parameters.q0 = q0;
+    MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
     % Visualize initial config
     MBSim.visualizeSystemConfig(q0, "figureName", "visInitConf");
@@ -85,11 +85,11 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
     MBSimRef.Name = "Ref";
 
     % Solver settings
-    MBSimRef.solver = MBSimIntegratorVarIntBroyden;
-    MBSimRef.solver.h = hRef;
-    MBSimRef.solver.JacobianIterationThreshold = 3;
-    MBSimRef.solver.errorMargin = errorMarginRef;
-    MBSimRef.solver.aTrapez = 1/2;
+    MBSimRef.integrator = elara.integration.VIBroyden;
+    MBSimRef.integrator.h = hRef;
+    MBSimRef.integrator.JacobianIterationThreshold = 3;
+    MBSimRef.integrator.tolerance = errorMarginRef;
+    MBSimRef.integrator.useFirstOrderDissipation = false;
 
     % Start integration
     MBSimRef = MBSimRef.simulateSystem;
@@ -101,7 +101,7 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
     MBSimRef.animateSimResults("figureName", "AnimVI");
 
     % Downsample reference solution to comparison time grid
-    q_ref_c = interp1(MBSimRef.simRes.tout, MBSimRef.simRes.q.', ...
+    q_ref_c = interp1(MBSimRef.results.tout, MBSimRef.results.q.', ...
         toutComp, 'pchip').';
 
 
@@ -117,7 +117,7 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
         nCases = length(intDef(iInt).ParamVec);
 
         % Initialize result arrays for the current integrator
-        res(iInt).MBSimObj = createArray(nCases, 1, "MBSimulation");
+        res(iInt).MBSimObj = createArray(nCases, 1, "elara.Simulation");
         res(iInt).qErrorNorm = nan(nCases, 1);
         res(iInt).qErrorMax  = nan(nCases, 1);
         res(iInt).qErrorMat  = nan(nCases, length(toutComp));
@@ -134,24 +134,24 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
             MBSimCase.Name = sprintf("%s case %d", intDef(iInt).Name, iCase);
 
             % Solver settings
-            MBSimCase.solver = intDef(iInt).Solver;
-            MBSimCase.solver.accurateTiming = accurateTiming;
+            MBSimCase.integrator = intDef(iInt).Solver;
+            MBSimCase.integrator.accurateTiming = accurateTiming;
 
             switch intDef(iInt).Solver.type
                 case "varint"
-                    MBSimCase.solver.h = intDef(iInt).ParamVec(iCase);
+                    MBSimCase.integrator.h = intDef(iInt).ParamVec(iCase);
                 case "ode"
-                    MBSimCase.solver.useMassMatrixForm = false;
+                    MBSimCase.integrator.useMassMatrixForm = false;
                     AbsTol = intDef(iInt).ParamVec(iCase);
                     RelTol = AbsTol * 1e1;
 
                     % Check if the solver is a regular ode solver or RADAU
                     if intDef(iInt).Name == "RADAU"
-                        MBSimCase.solver.solverOptions = rdpset( ...
+                        MBSimCase.integrator.solverOptions = rdpset( ...
                             'RelTol', RelTol, 'AbsTol', AbsTol);
                     else
-                        MBSimCase.solver.odeObject.RelativeTolerance = RelTol;
-                        MBSimCase.solver.odeObject.AbsoluteTolerance = AbsTol;
+                        MBSimCase.integrator.odeObject.RelativeTolerance = RelTol;
+                        MBSimCase.integrator.odeObject.AbsoluteTolerance = AbsTol;
                     end
             end
 
@@ -161,22 +161,22 @@ function saveDir = sim_study_integrators_run_case(caseDef, runOpts)
             res(iInt).MBSimObj(iCase) = MBSimCase;
 
             % Check if simulation was successful
-            if MBSimCase.simRes.tout(end) < 0.9*tEnd
+            if MBSimCase.results.tout(end) < 0.9*tEnd
                 fprintf("Integration failed.\n")
                 continue;
             end
 
             % Assign results
-            res(iInt).tComp(iCase) = MBSimCase.simRes.metaDataSim.TotalTime;
+            res(iInt).tComp(iCase) = MBSimCase.results.computationTime;
             if intDef(iInt).Solver.type == "varint"
                 res(iInt).implIterMean(iCase) = mean( ...
-                    MBSimCase.simRes.solverIterations, "omitmissing");
+                    MBSimCase.results.solverIterations, "omitmissing");
                 res(iInt).implIterMax(iCase)  = max( ...
-                    MBSimCase.simRes.solverIterations, [], "omitmissing");
+                    MBSimCase.results.solverIterations, [], "omitmissing");
             end
 
             % Compute integration errors
-            q_comp = interp1(MBSimCase.simRes.tout, MBSimCase.simRes.q.', ...
+            q_comp = interp1(MBSimCase.results.tout, MBSimCase.results.q.', ...
                 toutComp, 'pchip').';
 
             res(iInt).qErrorMat(iCase,:) = vecnorm(abs(q_comp - q_ref_c));

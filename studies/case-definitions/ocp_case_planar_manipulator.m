@@ -1,25 +1,24 @@
 function caseDef = ocp_case_planar_manipulator
     %% Define OCP simulation study case: planar manipulator (ID 3)
 
-    OCP = OCPDefinition;
-
     %% Define case
 
     links = systemDefPlanarNLinkPendulum("nLinks", 2, "d", 0);
-    MBSim = MBSimulation(links, "displayInfo", true);
+    OCP = elara.ocp.Problem(links);
+    MBSim = OCP.getSimulationObject;
 
-    OCP.tF = 1;
-    OCP.q0 = [pi/2, 0];
+    OCP.tEnd = 1;
+    OCP.q0 = [pi/2; 0];
 
-    OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
-    OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
+    OCP.qDot0 = zeros(OCP.systemNum.nDoF,1); % Initial velocity
+    OCP.qDotF = zeros(OCP.systemNum.nDoF,1); % Final velocity
 
     OCP.qMin = -2*pi*ones(2,1);
     OCP.qMax = +2*pi*ones(2,1);
 
     if 1
         % To reproduce the simple example in [Obe08]
-        OCP.wRC = [
+        OCP.runningCostWeights = [
             1/2  % Norm u
             0  % Norm u_dot
             0  % Norm u_ddot
@@ -31,7 +30,7 @@ function caseDef = ocp_case_planar_manipulator
         OCP.qMax(2) = 0.1;
     else
         % For various other tests
-        OCP.wRC = [
+        OCP.runningCostWeights = [
             1/2  % Norm u
             1/2  % Norm u_dot
             1/2*1e-3  % Norm u_ddot
@@ -39,10 +38,10 @@ function caseDef = ocp_case_planar_manipulator
             1e5  % TCP error
             ];
     end
-    OCP.iRC = logical(OCP.wRC);
+    OCP.runningCostActive = logical(OCP.runningCostWeights);
 
     % No final time cost term
-    OCP.iFC = zeros(3,1);
+    OCP.finalCostActive = false(3,1);
 
     % Input limits: Not necessary, but significantly improve VI
     % convergence for some reason (with splines)
@@ -53,13 +52,13 @@ function caseDef = ocp_case_planar_manipulator
     OCP.inputSplineOrder = 3;
     OCP.nInputSplinePoints = 15;
 
-    OCP.qF = [-pi/2, 0];
+    OCP.qF = [-pi/2; 0];
     OCP.addTCPFinalTimeConstraint = false;
 
     % Use zero initial guess
     computeInitialGuess = false;
 
-    refDiscretization = OCPIntegratorRK("RK4");
+    refDiscretization = elara.ocp.DiscretizationRK("RK4");
 
     %% Assign to output struct
     caseDef.systemModel = 3;

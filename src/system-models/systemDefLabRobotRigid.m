@@ -6,7 +6,7 @@ function links = systemDefLabRobotRigid(opts)
     end
 
     nLinks = 3;
-    links = createArray(nLinks,1,"MBLinkDefinitionRigid");
+    links = createArray(nLinks, 1, "elara.RigidLink");
 
     % Joint dissipation
     links(1).d = opts.d;
@@ -21,18 +21,18 @@ function links = systemDefLabRobotRigid(opts)
     % Constant transformations in the joints
     % (between adjacent joint frames)
     g_J_const(:,:,1) = eye(4);
-    g_J_const(:,:,2) = SE3Matrix([0, -1, 0; 0 0 -1; 1, 0, 0], zeros(3,1));
+    g_J_const(:,:,2) = elara.SE3.matrix([0, -1, 0; 0 0 -1; 1, 0, 0], zeros(3,1));
     g_J_const(:,:,3) = eye(4);
 
     % Transformations from joint 1 -> joint 2 in each (serial) link
-    g_J1_J2(:,:,1)  = SE3Matrix(eye(3), [0,0,l(1)]);
-    g_J1_J2(:,:,2)  = SE3Matrix(eye(3), [l(2),0,0]);
-    g_J1_J2(:,:,3)  = SE3Matrix(eye(3), [l(3),0,0]);
+    g_J1_J2(:,:,1)  = elara.SE3.matrix(eye(3), [0,0,l(1)]);
+    g_J1_J2(:,:,2)  = elara.SE3.matrix(eye(3), [l(2),0,0]);
+    g_J1_J2(:,:,3)  = elara.SE3.matrix(eye(3), [l(3),0,0]);
 
     % Transformations from joint 1 -> COM in each (serial) link
-    g_J1_COM(:,:,1) = SE3Matrix(eye(3), [0,0,l(1)/2]);
-    g_J1_COM(:,:,2) = SE3Matrix(eye(3), [l(2)/2,0,0]);
-    g_J1_COM(:,:,3) = SE3Matrix(eye(3), [l(3)/2,0,0]);
+    g_J1_COM(:,:,1) = elara.SE3.matrix(eye(3), [0,0,l(1)/2]);
+    g_J1_COM(:,:,2) = elara.SE3.matrix(eye(3), [l(2)/2,0,0]);
+    g_J1_COM(:,:,3) = elara.SE3.matrix(eye(3), [l(3)/2,0,0]);
 
     % Transformations from COM -> joint 2
     g_COM_J2 = zeros(4,4,nLinks);
@@ -41,9 +41,9 @@ function links = systemDefLabRobotRigid(opts)
     end
 
     % Check SE3 arrays
-    mustBeSE3MatrixArray(g_J_const);
-    mustBeSE3MatrixArray(g_J1_COM);
-    mustBeSE3MatrixArray(g_COM_J2);
+    elara.internal.validation.mustBeSE3Matrix(g_J_const);
+    elara.internal.validation.mustBeSE3Matrix(g_J1_COM);
+    elara.internal.validation.mustBeSE3Matrix(g_COM_J2);
 
 
     %% Define joints
@@ -64,7 +64,7 @@ function links = systemDefLabRobotRigid(opts)
             g_J_ref(:,:,iLink) = g_COM_J2(:,:,iLink-1) * g_J_const(:,:,iLink) * g_J1_COM(:,:,iLink);
         end
     end
-    mustBeSE3MatrixArray(g_J_ref);
+    elara.internal.validation.mustBeSE3Matrix(g_J_ref);
 
 
     %% Create link objects
@@ -77,7 +77,7 @@ function links = systemDefLabRobotRigid(opts)
     I_long = 1/4*m*r^2 + 1/12*m*l(1)^2;
 
     links(1).parentLink = 0;
-    links(1).isActuated = 1;
+    links(1).jointIsActuated = true;
     links(1).jointAxis  = Z(:,1);
     links(1).g_J_B      = g_J1_COM(:,:,1);
     links(1).g_ref      = g_J_ref(:,:,1);
@@ -134,6 +134,6 @@ function links = systemDefLabRobotRigid(opts)
 
     % Add TCP definition
     links(3).hasTCP = true;
-    links(3).g_B_TCP = SE3Matrix(eye(3), [l(3)/2;0;0]);
+    links(3).g_B_TCP = elara.SE3.matrix(eye(3), [l(3)/2;0;0]);
 
 end

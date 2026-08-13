@@ -11,7 +11,10 @@ close all
 
 %% Specify and load results
 
-SYSTEM_MDL = 1;
+% 0 = Pendulum
+% 1 = Cantilever beam HK24
+% 2 = Rigid-Flexible Robot
+SYSTEM_MDL = 2;
 
 SAVE_PLOTS = true;
 
@@ -25,20 +28,15 @@ plotSaveDir = fullfile(getRootFolder, "results", "plots", "time-integration");
 % Subfolder names
 switch SYSTEM_MDL
     case 0
-        %subFolder(1) = "260212_1211_simStudy_integrators__system_0_dissip_0";
-        %subFolder(2) = "260212_1157_simStudy_integrators__system_0_dissip_1";
-        subFolder(1) = "260716_1611_simStudy_integrators__system_0_dissip_0";
-        subFolder(2) = "260716_1603_simStudy_integrators__system_0_dissip_1";
+        subFolder(1) = "260813_1104_simStudy_integrators__system_0_dissip_0";
+        subFolder(2) = "260813_1106_simStudy_integrators__system_0_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_rigid";
     case 1
-        % subFolder(1) = "260212_1455_simStudy_integrators__system_1_dissip_0";
-        % subFolder(2) = "260212_1554_simStudy_integrators__system_1_dissip_1";
-        subFolder(1) = "260716_1631_simStudy_integrators__system_1_dissip_0";
-        subFolder(2) = "260716_1631_simStudy_integrators__system_1_dissip_1";
+        subFolder(1) = "260813_1110_simStudy_integrators__system_1_dissip_0";
+        subFolder(2) = "260813_1132_simStudy_integrators__system_1_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_flexible";
     case 2
-        %subFolder = "260212_1224_simStudy_integrators__system_2_dissip_1";
-        subFolder = "260716_1634_simStudy_integrators__system_2_dissip_1";
+        subFolder = "260813_1136_simStudy_integrators__system_2_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_combined";
     otherwise
         error("Not defined.");
@@ -62,12 +60,12 @@ end
 
 if SYSTEM_MDL == 0
     iC = 1;
-    qVis = deg2rad([45,-15,-15,-15]);
+    qVis = deg2rad([45;-15;-15;-15]);
 
     % Compute joint positions for text
     xJoints = zeros(3,4);
-    gVis = simStudyRes(iC).MBSim.MBSys.computeFwdKin(qVis);
-    for iLink = 1:simStudyRes(iC).MBSim.MBSys.nLinks
+    gVis = simStudyRes(iC).MBSim.system.computeFwdKin(qVis);
+    for iLink = 1:simStudyRes(iC).MBSim.system.nLinks
         gJoint = gVis(:,:,iLink)/simStudyRes(iC).MBSim.links(iLink).g_J_B;
         xJoints(:,iLink) = gJoint(1:3,4);
     end
@@ -81,7 +79,7 @@ if SYSTEM_MDL == 0
     xJoints = xJoints + xOffset;
 
     % System Visualization
-    fhVis = init3Dplot( ...
+    fhVis = elara.visualization.initializeAxes( ...
         "Name", sprintf("system visualization case %d", iC), ...
         "NumberTitle", "off", "Theme", "Light");
 
@@ -89,7 +87,7 @@ if SYSTEM_MDL == 0
     [~, vis] = simStudyRes(iC).MBSim.visualizeSystemConfig( qVis,...
         "createFigure", false, "linkColorMap", colorMapFun);
 
-    for iLink = 1:simStudyRes(iC).MBSim.MBSys.nLinks
+    for iLink = 1:simStudyRes(iC).MBSim.system.nLinks
         text(xJoints(1,iLink), xJoints(2,iLink), xJoints(3,iLink), ...
             sprintf("$q_%d$", iLink), "Interpreter", "latex", ...
             "FontSize", 11);
@@ -100,14 +98,14 @@ if SYSTEM_MDL == 0
     zlim([-1.6, 0.35]);
     axis off;
 
-    vis.cSysI.Scale = 0.3;
-    vis.cSysI.LabelFontSize = 12;
-    vis.cSysI.Name = "";
+    vis.coordSysI.Scale = 0.3;
+    vis.coordSysI.LabelFontSize = 12;
+    vis.coordSysI.Name = "";
 
-    for iLink = 1:simStudyRes(iC).MBSim.MBSys.nLinks
-        vis.linkVis(iLink).cSysJ.Visible = false;
-        vis.linkVis(iLink).cSysRef.Scale = 0.2;
-        vis.linkVis(iLink).cSysRef.Name = "";
+    for iLink = 1:simStudyRes(iC).MBSim.system.nLinks
+        vis.linkVisualization(iLink).coordSysJ.Visible = false;
+        vis.linkVisualization(iLink).coordSysRef.Scale = 0.2;
+        vis.linkVisualization(iLink).coordSysRef.Name = "";
     end
     view(38, 12);
     %circular_arrow(fhVis, 0.3, [0.5,-0.1], 5, 5, 1)
@@ -126,15 +124,15 @@ if SYSTEM_MDL == 2
     iC = 1;
     for iConf = 1:2
         if iConf == 1
-            qVis = simStudyRes(iC).MBSim.MBSys.qRef*0;
+            qVis = simStudyRes(iC).MBSim.system.qRef*0;
         else
-            qVis = simStudyRes(iC).MBSim.MBSys.qRef;
+            qVis = simStudyRes(iC).MBSim.system.qRef;
         end
 
         % Compute joint positions for text
         xJoints = zeros(3,4);
-        gVis = simStudyRes(iC).MBSim.MBSys.computeFwdKin(qVis);
-        for iLink = 1:simStudyRes(iC).MBSim.MBSys.nLinks
+        gVis = simStudyRes(iC).MBSim.system.computeFwdKin(qVis);
+        for iLink = 1:simStudyRes(iC).MBSim.system.nLinks
             gJoint = gVis(:,:,iLink)/simStudyRes(iC).MBSim.links(iLink).g_J_B;
             xJoints(:,iLink) = gJoint(1:3,4);
         end
@@ -157,13 +155,13 @@ if SYSTEM_MDL == 2
 
         % System Visualization
         colorMapFun = @(x) crameri("nuuk", x+1);
-        fhVis = init3Dplot( ...
+        fhVis = elara.visualization.initializeAxes( ...
             "Name", sprintf("system visualization conf %d", iConf), ...
             "NumberTitle", "off", "Theme", "Light");
         [~, vis] = simStudyRes(iC).MBSim.visualizeSystemConfig( qVis,...
             "createFigure", false, "linkColorMap", colorMapFun);
 
-        for iLink = 1:simStudyRes(iC).MBSim.MBSys.nLinks
+        for iLink = 1:simStudyRes(iC).MBSim.system.nLinks
             text(xJoints(1,iLink), xJoints(2,iLink), xJoints(3,iLink), ...
                 sprintf("$q_%d$", iLink), "Interpreter", "latex", ...
                 "FontSize", 11);
@@ -180,17 +178,17 @@ if SYSTEM_MDL == 2
         end
         axis off;
 
-        vis.cSysI.Scale = 0.15;
-        vis.cSysI.LabelFontSize = 12;
-        vis.cSysI.Name = "";
+        vis.coordSysI.Scale = 0.15;
+        vis.coordSysI.LabelFontSize = 12;
+        vis.coordSysI.Name = "";
 
         for iLink = 1:3
-            vis.linkVis(iLink).cSysJ.Visible = false;
-            vis.linkVis(iLink).cSysRef.Scale = 0.1;
-            vis.linkVis(iLink).cSysRef.Name = "";
+            vis.linkVisualization(iLink).coordSysJ.Visible = false;
+            vis.linkVisualization(iLink).coordSysRef.Scale = 0.1;
+            vis.linkVisualization(iLink).coordSysRef.Name = "";
         end
-        vis.linkVis(end).cSysJ.Visible = false;
-        vis.linkVis(end).cSysTCP.Visible = false;
+        vis.linkVisualization(end).coordSysJ.Visible = false;
+        vis.linkVisualization(end).coordSysTCP.Visible = false;
         view(12, 22);
         %circular_arrow(fhVis, 0.3, [0.5,-0.1], 5, 5, 1)
 
@@ -213,15 +211,16 @@ end
 
 %% Snapshots
 
-if SYSTEM_MDL == 1
+if SYSTEM_MDL == 0
     for iC = 1:nCases
-        fhSS = init3Dplot( ...
+        fhSS = elara.visualization.initializeAxes( ...
             "Name", sprintf("snapshots case %d", iC), ...
             "NumberTitle", "off", "Theme", "Light");
 
-        % snapShotColormap = crameri("imola", size(gQuery,4)+1);
+        colorMapFun = @(x) crameri("imola", x+1);
         simStudyRes(iC).MBSimRef.drawSnapshots("figure", fhSS, ...
-            "nSnapShots", 15, "includeColorbar", false);
+            "nSnapShots", 15, "includeColorbar", false, ...
+            "snapShotColormap", colorMapFun);
         title("")
         xlim([-4.1, 4.1]);
         ylim([-0.3, 0.3]);
@@ -233,7 +232,8 @@ if SYSTEM_MDL == 1
         % Coordinate frame for inertial frame
         % Shift slightly in negative y direction to place text labels on top of
         % other plot stuff
-        coordSysSE3(SE3Matrix(eye(3), [0,-0.15,0]), "Scale", 0.5, "Name", "", "LabelFontSize", 12, ...
+        elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), ...
+            [0,-0.15,0]), "Scale", 0.5, "Name", "", "LabelFontSize", 12, ...
             "AxisColors", repmat(lines(1), [3,1]));
 
         if SAVE_PLOTS
@@ -259,8 +259,8 @@ if SYSTEM_MDL ~= 1
         tl = tiledlayout("vertical", "TileSpacing", "tight", "Padding", "tight");
         ax = nexttile;
 
-        plot(simStudyRes(iC).MBSimRef.simRes.tout, ...
-            simStudyRes(iC).MBSimRef.simRes.q(plotDof,:), "LineWidth", plotLineWidth);
+        plot(simStudyRes(iC).MBSimRef.results.tout, ...
+            simStudyRes(iC).MBSimRef.results.q(plotDof,:), "LineWidth", plotLineWidth);
         grid on;
         ylabel("$q$ in rad", "Interpreter", "latex");
         %xlabel("time $t$ in s", "Interpreter", "latex");
@@ -268,7 +268,7 @@ if SYSTEM_MDL ~= 1
         %xlim([OCP.tout(1), OCP.tout(end)]);
         %colororder(ax, qColors);
         axis padded;
-        xlim(simStudyRes(iC).MBSimRef.simRes.tout([1,end]));
+        xlim(simStudyRes(iC).MBSimRef.results.tout([1,end]));
         if SYSTEM_MDL == 0
             ylim([-15, 5]);
         end
@@ -289,8 +289,8 @@ if SYSTEM_MDL ~= 1
         end
 
         ax = nexttile;
-        plot(simStudyRes(iC).MBSimRef.simRes.tout, ...
-            simStudyRes(iC).MBSimRef.simRes.q_dot(plotDof,:), "LineWidth", plotLineWidth);
+        plot(simStudyRes(iC).MBSimRef.results.tout, ...
+            simStudyRes(iC).MBSimRef.results.q_dot(plotDof,:), "LineWidth", plotLineWidth);
         grid on;
         ylabel("$\dot{q}$ in rad/s", "Interpreter", "latex");
         xlabel("time $t$ in s", "Interpreter", "latex");
@@ -298,7 +298,7 @@ if SYSTEM_MDL ~= 1
         % xlim([OCP.tout(1), OCP.tout(end)]);
         % colororder(ax, qColors);
         axis padded;
-        xlim(simStudyRes(iC).MBSimRef.simRes.tout([1,end]));
+        xlim(simStudyRes(iC).MBSimRef.results.tout([1,end]));
         if SYSTEM_MDL == 0
             ylim([-30, 25]);
         end
@@ -318,7 +318,7 @@ end
 %% Discrete deformations
 
 if SYSTEM_MDL == 2
-    nSeg = simStudyRes(iC).MBSimRef.links(end).nSeg;
+    nSeg = simStudyRes(iC).MBSimRef.links(end).nSegments;
     dofPsiX = 5:2:3+nSeg*2;
     dofPsiY = 6:2:4+nSeg*2;
 
@@ -331,8 +331,8 @@ if SYSTEM_MDL == 2
         tl = tiledlayout("vertical", "TileSpacing", "tight", "Padding", "tight");
         ax = nexttile;
 
-        ph = plot(simStudyRes(iC).MBSimRef.simRes.tout, ...
-            simStudyRes(iC).MBSimRef.simRes.q(dofPsiX,:), "LineWidth", plotLineWidth);
+        ph = plot(simStudyRes(iC).MBSimRef.results.tout, ...
+            simStudyRes(iC).MBSimRef.results.q(dofPsiX,:), "LineWidth", plotLineWidth);
         grid on;
         ylabel("$\psi_x$", "Interpreter", "latex");
         %xlabel("time $t$ in s", "Interpreter", "latex");
@@ -340,7 +340,7 @@ if SYSTEM_MDL == 2
         %xlim([OCP.tout(1), OCP.tout(end)]);
         %colororder(ax, qColors);
         axis padded;
-        xlim(simStudyRes(iC).MBSimRef.simRes.tout([1,end]));
+        xlim(simStudyRes(iC).MBSimRef.results.tout([1,end]));
         if SYSTEM_MDL == 0
             ylim([-15, 5]);
         end
@@ -360,8 +360,8 @@ if SYSTEM_MDL == 2
         % end
 
         ax = nexttile;
-        plot(simStudyRes(iC).MBSimRef.simRes.tout, ...
-            simStudyRes(iC).MBSimRef.simRes.q(dofPsiY,:), "LineWidth", plotLineWidth);
+        plot(simStudyRes(iC).MBSimRef.results.tout, ...
+            simStudyRes(iC).MBSimRef.results.q(dofPsiY,:), "LineWidth", plotLineWidth);
         grid on;
         ylabel("$\psi_y$", "Interpreter", "latex");
         xlabel("time $t$ in s", "Interpreter", "latex");
@@ -369,7 +369,7 @@ if SYSTEM_MDL == 2
         % xlim([OCP.tout(1), OCP.tout(end)]);
         % colororder(ax, qColors);
         axis padded;
-        xlim(simStudyRes(iC).MBSimRef.simRes.tout([1,end]));
+        xlim(simStudyRes(iC).MBSimRef.results.tout([1,end]));
         if SYSTEM_MDL == 0
             ylim([-30, 25]);
         end

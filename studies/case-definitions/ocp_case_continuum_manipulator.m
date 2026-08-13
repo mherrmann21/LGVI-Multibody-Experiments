@@ -1,29 +1,28 @@
 function caseDef = ocp_case_continuum_manipulator
     %% Define OCP simulation study case: continuum manipulator (ID 1)
 
-    OCP = OCPDefinition;
-
     %% Define case
     links = systemDefContManip_simStudy("usedTendons", [1,2,3]);
-    MBSim = MBSimulation(links, "displayInfo", false);
+    OCP = elara.ocp.Problem(links);
+    MBSim = OCP.getSimulationObject;
 
-    OCP.tF = 2;
-    OCP.q0 = zeros(MBSim.MBSys.nDoF,1);
+    OCP.tEnd = 2;
+    OCP.q0 = zeros(OCP.systemNum.nDoF,1);
 
-    OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
-    OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
+    OCP.qDot0 = zeros(OCP.systemNum.nDoF,1); % Initial velocity
+    OCP.qDotF = zeros(OCP.systemNum.nDoF,1); % Final velocity
 
-    OCP.wRC = [
+    OCP.runningCostWeights = [
         5e-3 % Norm u
         0    % Norm u_dot
         0    % Norm u_ddot
         0    % Norm q_ddot
         1e7  % TCP error (Running tracking error)
         ];
-    OCP.iRC = logical(OCP.wRC);
+    OCP.runningCostActive = logical(OCP.runningCostWeights);
 
     % No final time cost term
-    OCP.iFC = zeros(3,1);
+    OCP.finalCostActive = false(3,1);
 
     OCP.addTCPFinalTimeConstraint = false;
 
@@ -33,11 +32,9 @@ function caseDef = ocp_case_continuum_manipulator
 
     % Desired TCP pose
     OCP.x_TCP_F = [0.2; 0.3; 0.4];
-    OCP.R_TCP_F = []; % Rotation arbitrary
-
     % Controls constraints
     OCP.u0 = [];
-    OCP.uMin = ones(MBSim.MBSys.nInputs,1)*-1e-3;
+    OCP.uMin = ones(OCP.systemNum.nInputs,1)*-1e-3;
     OCP.uMax = [];
 
     % Pre and post actuation times for the trajectory
@@ -47,14 +44,14 @@ function caseDef = ocp_case_continuum_manipulator
     % Compute IG from inverse dynamics
     computeInitialGuess = true;
 
-    refDiscretization = OCPIntegratorVI;
+    refDiscretization = elara.ocp.DiscretizationVI;
 
-    OCP.nlpOpts.ipopt.max_iter = 125;
+    OCP.nlpOptions.ipopt.max_iter = 125;
 
     % Additional options to terminate solver when the problem does not
     % seem to converge
-    OCP.nlpOpts.ipopt.max_resto_iter = 20;
-    OCP.nlpOpts.ipopt.diverging_iterates_tol = 1e11;
+    OCP.nlpOptions.ipopt.max_resto_iter = 20;
+    OCP.nlpOptions.ipopt.diverging_iterates_tol = 1e11;
 
     %% Assign to output struct
     caseDef.systemModel = 1;

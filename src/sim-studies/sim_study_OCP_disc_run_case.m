@@ -18,7 +18,6 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
 
     % Case data
     systemModel = caseDef.systemModel;
-    links = caseDef.links;
     MBSim = caseDef.MBSim;
     OCP = caseDef.OCP;
     computeInitialGuess = caseDef.computeInitialGuess;
@@ -27,32 +26,33 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
 
     %% Finish OCP object initialization
 
-    OCP.MBSys = MBSystemSym(links);
-    OCP.simPars = MBSim.simPars;
+    OCP.simPars = MBSim.parameters;
 
-    OCP.nlpOpts.expand = false;
+    OCP.nlpOptions.expand = false;
 
-    % OCP.nlpOpts.ipopt.tol = 1e-12;
-    % OCP.nlpOpts.ipopt.dual_inf_tol = 1e-10;
-    % OCP.nlpOpts.ipopt.constr_viol_tol = 1e-10;
-    % OCP.nlpOpts.ipopt.acceptable_tol = 1e-10;
+    % OCP.nlpOptions.ipopt.tol = 1e-12;
+    % OCP.nlpOptions.ipopt.dual_inf_tol = 1e-10;
+    % OCP.nlpOptions.ipopt.constr_viol_tol = 1e-10;
+    % OCP.nlpOptions.ipopt.acceptable_tol = 1e-10;
 
-    OCP.nlpOpts.ipopt.linear_solver = 'ma97'; % best for stiff systems!
-    OCP.nlpOpts.ipopt.fixed_variable_treatment = 'relax_bounds';
+    OCP.nlpOptions.ipopt.linear_solver = 'ma97'; % best for stiff systems!
+    OCP.nlpOptions.ipopt.fixed_variable_treatment = 'relax_bounds';
 
 
     %% Visualize reference configuration and target position
 
     MBSim.visualizeSystemRefConf();
-    coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+    if ~isempty(OCP.x_TCP_F)
+        elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+    end
 
 
     %% Define solvers
 
     discNames = ["VI", "RK2-1s", "RK4-1s", "implicitMidpoint"];
     discretizations = {
-        OCPIntegratorVI, OCPIntegratorRK("RK2"), ...
-        OCPIntegratorRK("RK4"), OCPIntegratorImplicitMidpoint
+        elara.ocp.DiscretizationVI, elara.ocp.DiscretizationRK("RK2"), ...
+        elara.ocp.DiscretizationRK("RK4"), elara.ocp.DiscretizationImplicitMidpoint
         };
 
     % Make sure VI is second-order (trapezoidal rule)
@@ -104,19 +104,23 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
     OCPRef.Name = "Ref";
 
     if computeInitialGuess
-        [q_init_ref, qd_init_ref, u_init_ref, MBSimIG, qOptStatic] = OCPComputeInitialGuess_InvDyn( ...
-            MBSim, OCPRef, "invDynMethod", "ODE", "createDebugPlots", true);
+        [q_init_ref, qd_init_ref, u_init_ref, MBSimIG, qOptStatic] = elara.ocp.computeInitialGuessInvDyn( ...
+            OCPRef, "invDynMethod", "ODE", "createDebugPlots", true);
 
-        fh_IG_Ref = plotOCPqu( ...
+        fh_IG_Ref = elara.ocp.plot.coordinatesInputs( ...
             OCPRef, q_init_ref, u_init_ref, "figureName", "Initial Guess", "plotDerivatives", true);
 
         fh_IG_Ref(end+1) = MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Ref IG Static Config");
-        coordSysSE3(SE3Matrix(eye(3), OCPRef.x_TCP_F));
+        if ~isempty(OCPRef.x_TCP_F)
+            elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCPRef.x_TCP_F));
+        end
 
         % Animate results
         if animateInitialGuess
-            fig = init3Dplot('Name', "Animation Initial Guess");%, "WindowStyle","normal");
-            coordSysSE3(SE3Matrix(eye(3), OCPRef.x_TCP_F));
+            fig = elara.visualization.initializeAxes('Name', "Animation Initial Guess");%, "WindowStyle","normal");
+            if ~isempty(OCPRef.x_TCP_F)
+                elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCPRef.x_TCP_F));
+            end
             MBSimIG.animateSimResults("figure", fig);
         end
 
@@ -127,15 +131,15 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         end
     else
         q_init_ref  = repmat(OCPRef.q0, [1,OCPRef.nSteps+1]);
-        qd_init_ref = zeros(MBSim.MBSys.nDoF, OCPRef.nSteps+1);
-        u_init_ref  = zeros(MBSim.MBSys.nInputs, OCPRef.nSteps+1);
+        qd_init_ref = zeros(OCPRef.systemNum.nDoF, OCPRef.nSteps+1);
+        u_init_ref  = zeros(OCPRef.systemNum.nInputs, OCPRef.nSteps+1);
     end
 
     % For contManip trajectory tracking: Update TCP final position to valid
     % final position
-    if OCP.iRC(5) && systemModel == 1
-        gOptStatic = MBSim.MBSys.computeFwdKin(qOptStatic);
-        g_TCP = gOptStatic(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+    if OCP.runningCostActive(5) && systemModel == 1
+        gOptStatic = OCP.systemNum.computeFwdKin(qOptStatic);
+        g_TCP = gOptStatic(:,:,OCP.systemNum.indexTCPFrame)*OCP.systemNum.g_B_TCP;
         x_TCP_des = g_TCP(1:3, 4);
         OCP.x_TCP_F = x_TCP_des;
         OCPRef.x_TCP_F = x_TCP_des;
@@ -143,8 +147,9 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
 
     %% Generate desired TCP trajectory
 
-    if OCP.iRC(5)
-        [OCPRef.x_TCP_traj, fh_traj_IG] = generateDesiredTCPTrajLinear(MBSim, OCPRef);
+    if OCP.runningCostActive(5)
+        OCPRef.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(OCPRef);
+        fh_traj_IG = elara.ocp.plot.TCPTrajectory(OCPRef, q_init_ref);
 
         if saveResults
             saveFigureArray(fh_traj_IG, saveDir, "saveFig", true, "saveJPEG", true);
@@ -156,7 +161,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
 
     fprintf("\nStarting reference OCP...\n\n");
 
-    OCPRef.nlpOpts.expand = false;
+    OCPRef.nlpOptions.expand = false;
     OCPRef.discretization = refDiscretization;
 
     OCPRef = OCPRef.initSolver("useCasadiStepFunctions", true);
@@ -174,7 +179,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         hold on;
         plot(OCPRef.tout, BRef*u_init_ref_z.', "--o", "DisplayName", "Fitted Spline");
         grid on;
-        colororder(lines(MBSim.MBSys.nInputs));
+        colororder(lines(OCPRef.systemNum.nInputs));
         legend;
         title("Spline Fit");
 
@@ -198,26 +203,21 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
     fh_Ref(end+1) = OCPRef.plotConstraintResiduals(x_init_ref, u_init_ref_z, ...
         "figureName", "Constr. Res. IG");
 
-    [x_ref, u_ref_z, sol_ref, stats_ref] = OCPRef.solve(x_init_ref, u_init_ref_z);
-    if OCPRef.useSplineInputs
-        u_ref = (BRef*u_ref_z.').';
-    else
-        u_ref = u_ref_z;
-    end
+    [x_ref, u_ref, u_ref_z, sol_ref, stats_ref] = OCPRef.solve(x_init_ref, u_init_ref_z);
     if OCPRef.discretization.type == "varint"
         q_ref = x_ref;
         %q_dot_ref = [];
     else
-        q_ref = x_ref(1:OCP.MBSys.nDoF,:);
-        %q_dot_ref = x_ref(OCP.MBSys.nDoF+1:end,:);
+        q_ref = x_ref(1:OCP.systemNum.nDoF,:);
+        %q_dot_ref = x_ref(OCP.systemNum.nDoF+1:end,:);
     end
 
     % Plot solution data
     fh_Ref(end+1) = OCPRef.plotConstraintResiduals(x_ref, u_ref_z, "figureName", "Constr. Res. Solution");
-    fh_Ref(end+1:end+2) = plotOCPqu(OCPRef, q_ref, u_ref, "plotDerivatives", true);
+    fh_Ref(end+1:end+2) = elara.ocp.plot.coordinatesInputs(OCPRef, q_ref, u_ref, "plotDerivatives", true);
 
-    if OCP.iRC(5)
-        fh_Ref(end+1) = plotOCPTCPTraj(MBSim, OCPRef, q_ref);
+    if OCP.runningCostActive(5)
+        fh_Ref(end+1) = elara.ocp.plot.TCPTrajectory(OCPRef, q_ref);
     end
 
     % Check if reference solution was successful
@@ -226,7 +226,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
     end
 
     % Downsample reference solution to comparison time grid
-    toutComp = (0 : hComp : hComp*round(OCP.tF/hComp)).';
+    toutComp = (0 : hComp : hComp*round(OCP.tEnd/hComp)).';
     u_ref_c = interp1(OCPRef.tout, u_ref.', toutComp, 'pchip').';
     q_ref_c = interp1(OCPRef.tout, q_ref.', toutComp, 'pchip').';
 
@@ -255,7 +255,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         );
 
     qErrorMat = zeros(nTSteps, nInts, length(toutComp));
-    qCompMat  = zeros(nTSteps, nInts, OCP.MBSys.nDoF, length(toutComp));
+    qCompMat  = zeros(nTSteps, nInts, OCP.systemNum.nDoF, length(toutComp));
 
     for ih = 1:nTSteps
         fprintf("\nStarting time step %d/%d: h = %f s...\n\n", ih, nTSteps, hVec(ih));
@@ -264,12 +264,12 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         OCPh.h = hVec(ih);
 
         if computeInitialGuess
-            [q_init_h, qd_init_h, u_init_h] = OCPComputeInitialGuess_InvDyn( ...
-                MBSim, OCPh, "invDynMethod", "ODE");
+            [q_init_h, qd_init_h, u_init_h] = elara.ocp.computeInitialGuessInvDyn( ...
+                OCPh, "invDynMethod", "ODE");
         else
             q_init_h  = repmat(OCPRef.q0, [1, OCPh.nSteps+1]);
-            qd_init_h = zeros(MBSim.MBSys.nDoF, OCPh.nSteps+1);
-            u_init_h  = zeros(MBSim.MBSys.nInputs, OCPh.nSteps+1);
+            qd_init_h = zeros(OCPh.systemNum.nDoF, OCPh.nSteps+1);
+            u_init_h  = zeros(OCPh.systemNum.nInputs, OCPh.nSteps+1);
         end
 
         if OCPh.useSplineInputs
@@ -285,7 +285,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
             hold on;
             plot(OCPh.tout, Bh*u_init_h_z.', "--o", "DisplayName", "Fitted Spline");
             grid on;
-            colororder(lines(MBSim.MBSys.nInputs));
+            colororder(lines(OCPh.systemNum.nInputs));
             legend;
             title("Spline Fit");
 
@@ -299,11 +299,11 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         end
 
         % Compute desired trajectory
-        if OCP.iRC(end) % Check if trajectory tracking cost is included
-            OCPh.x_TCP_traj = generateDesiredTCPTrajLinear(MBSim, OCPh);
+        if OCP.runningCostActive(end) % Check if trajectory tracking cost is included
+            OCPh.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(OCPh);
         end
 
-        fh_h(end+1:end+2) = plotOCPqu(OCPh, q_init_h, u_init_h, ...
+        fh_h(end+1:end+2) = elara.ocp.plot.coordinatesInputs(OCPh, q_init_h, u_init_h, ...
             "figureName", sprintf("Time Step %d Initial Guess", ih), ...
             "plotDerivatives", true);
         if saveResults
@@ -335,31 +335,25 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
 
             %% Solve OCP
 
-            [x_sol, u_sol_z, sol, stats] = OCPT.solve(xInit, u_init_h_z);
-
-            if OCPh.useSplineInputs
-                u_sol = (Bh*u_sol_z.').';
-            else
-                u_sol = u_sol_z;
-            end
+            [x_sol, u_sol, u_sol_z, sol, stats] = OCPT.solve(xInit, u_init_h_z);
 
             if OCPT.discretization.type == "varint"
                 q_sol = x_sol;
                 q_dot_sol = [];
             else
-                q_sol = x_sol(1:OCP.MBSys.nDoF,:);
-                q_dot_sol = x_sol(OCP.MBSys.nDoF+1:end,:);
+                q_sol = x_sol(1:OCP.systemNum.nDoF,:);
+                q_dot_sol = x_sol(OCP.systemNum.nDoF+1:end,:);
             end
 
             fh_T(2) = OCPT.plotConstraintResiduals(x_sol, u_sol_z, "figureName", "Constr. Res. Solution");
-            fh_T(3:4) = plotOCPqu(OCPT, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
+            fh_T(3:4) = elara.ocp.plot.coordinatesInputs(OCPT, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
-            if OCP.iRC(end) % If OCP includes trajectory tracking
-                fh_T(end+1) = plotOCPTCPTraj(MBSim, OCPT, q_sol); %#ok<AGROW>
+            if OCP.runningCostActive(end) % If OCP includes trajectory tracking
+                fh_T(end+1) = elara.ocp.plot.TCPTrajectory(OCPT, q_sol); %#ok<AGROW>
             end
 
             % Temp: Plot midpoint values of u
-            if isa(OCPT.discretization, "OCPIntegratorImplicitMidpoint")
+            if isa(OCPT.discretization, "elara.ocp.DiscretizationImplicitMidpoint")
                 figure("Name", OCPT.Name + ": midpoint u", "NumberTitle", "off");
                 u_midpoint = (u_sol(:,1:end-1)+u_sol(:,2:end))/2;
                 stairs(OCPT.tout, [u_midpoint,u_midpoint(:,end)].');
@@ -632,7 +626,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         fh2(iInt) = figure("Name", discNames(iInt) + ": qComp / t", "NumberTitle", "off");
         tiledlayout("flow");
 
-        for iDof = 1:OCP.MBSys.nDoF
+        for iDof = 1:OCP.systemNum.nDoF
             nexttile;
             plot(toutComp, squeeze(qCompMat(:, iInt, iDof, :)));
             hold on;
@@ -649,7 +643,7 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
         fh3(iInt) = figure("Name", discNames(iInt) + ": qError / t", "NumberTitle", "off");
         tiledlayout("flow");
 
-        for iDof = 1:OCP.MBSys.nDoF
+        for iDof = 1:OCP.systemNum.nDoF
             nexttile;
             semilogy(toutComp, abs(squeeze(qCompMat(:, iInt, iDof, :))-q_ref_c(iDof,:)));
             hold on;
@@ -671,31 +665,39 @@ function saveDir = sim_study_OCP_disc_run_case(caseDef, runOpts)
     %% Plot reference solution
 
     disp('Post processing...')
-    gTCPDes = SE3Matrix(eye(3), OCPRef.x_TCP_F);
+    hasTargetTCPPosition = ~isempty(OCPRef.x_TCP_F);
+    if hasTargetTCPPosition
+        gTCPDes = elara.SE3.matrix(eye(3), OCPRef.x_TCP_F);
+    end
 
     [q_dot, ~] = diff2ndOrder(q_ref, OCPRef.h);
 
     MBSimOCPRef = MBSim;
     MBSimOCPRef.Name = "Optimization";
-    MBSimOCPRef.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCPRef.tout, q_ref, q_dot);
+    MBSimOCPRef.results = elara.SimulationResults.fromStateTrajectory( ...
+        MBSim.system, OCPRef.tout, q_ref, q_dot);
 
     MBSimOCPRef.plotAll;
 
     % Draw snapshots
-    fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");%, "WindowStyle","normal");
-    coordSysSE3(gTCPDes);
+    fig = elara.visualization.initializeAxes('Name', "Snapshots Solution", "NumberTitle", "off");%, "WindowStyle","normal");
+    if hasTargetTCPPosition
+        elara.visualization.CoordinateFrame(gTCPDes);
+    end
     if OCPRef.nSteps < 50
         nSnapShots = OCPRef.nSteps/2+1;
     else
         nSnapShots = 20;
     end
     MBSimOCPRef.drawSnapshots("figure", fig, "nSnapShots",nSnapShots);
-    TCPTraj = squeeze(MBSimOCPRef.simRes.g(1:3,4,end,:));
+    TCPTraj = squeeze(MBSimOCPRef.results.g(1:3,4,end,:));
     plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
     % Animate results
-    fig = init3Dplot('Name', "Animation Solution");%, "WindowStyle","normal");
-    coordSysSE3(gTCPDes);
+    fig = elara.visualization.initializeAxes('Name', "Animation Solution");%, "WindowStyle","normal");
+    if hasTargetTCPPosition
+        elara.visualization.CoordinateFrame(gTCPDes);
+    end
     MBSimOCPRef.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 
 
