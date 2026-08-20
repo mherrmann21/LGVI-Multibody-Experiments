@@ -25,7 +25,7 @@ function caseDef = ocp_case_rigid_robot
         0  % Norm u_dot
         0  % Norm u_ddot
         0  % Norm q_ddot
-        5e3 % TCP error
+        5e3/2 % TCP error
         ];
     OCP.runningCostActive = logical(OCP.runningCostWeights);
 

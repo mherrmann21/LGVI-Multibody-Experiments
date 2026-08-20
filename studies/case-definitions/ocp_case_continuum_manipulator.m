@@ -17,7 +17,7 @@ function caseDef = ocp_case_continuum_manipulator
         0    % Norm u_dot
         0    % Norm u_ddot
         0    % Norm q_ddot
-        1e7  % TCP error (Running tracking error)
+        5e6  % TCP error (Running tracking error)
         ];
     OCP.runningCostActive = logical(OCP.runningCostWeights);
 
