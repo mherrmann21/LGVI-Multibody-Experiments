@@ -14,7 +14,7 @@ close all
 % 0 = Pendulum
 % 1 = Cantilever beam HK24
 % 2 = Rigid-Flexible Robot
-SYSTEM_MDL = 2;
+SYSTEM_MDL = 0;
 
 SAVE_PLOTS = true;
 
@@ -28,15 +28,15 @@ plotSaveDir = fullfile(getRootFolder, "results", "plots", "time-integration");
 % Subfolder names
 switch SYSTEM_MDL
     case 0
-        subFolder(1) = "260813_1104_simStudy_integrators__system_0_dissip_0";
-        subFolder(2) = "260813_1106_simStudy_integrators__system_0_dissip_1";
+        subFolder(1) = "260831_1141_simStudy_integrators__system_0_dissip_0";
+        subFolder(2) = "260831_1154_simStudy_integrators__system_0_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_rigid";
     case 1
-        subFolder(1) = "260813_1110_simStudy_integrators__system_1_dissip_0";
-        subFolder(2) = "260813_1132_simStudy_integrators__system_1_dissip_1";
+        subFolder(1) = "260831_1209_simStudy_integrators__system_1_dissip_0";
+        subFolder(2) = "260831_1251_simStudy_integrators__system_1_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_flexible";
     case 2
-        subFolder = "260813_1136_simStudy_integrators__system_2_dissip_1";
+        subFolder = "260831_1303_simStudy_integrators__system_2_dissip_1";
         plotSaveSubFolder = "integrator_simstudy_combined";
     otherwise
         error("Not defined.");
@@ -108,7 +108,7 @@ if SYSTEM_MDL == 0
         vis.linkVisualization(iLink).coordSysRef.Name = "";
     end
     view(38, 12);
-    %circular_arrow(fhVis, 0.3, [0.5,-0.1], 5, 5, 1)
+    drawnow;
 
     if SAVE_PLOTS
         saveFigureArray(fhVis, plotSaveFolder, ...
@@ -190,7 +190,7 @@ if SYSTEM_MDL == 2
         vis.linkVisualization(end).coordSysJ.Visible = false;
         vis.linkVisualization(end).coordSysTCP.Visible = false;
         view(12, 22);
-        %circular_arrow(fhVis, 0.3, [0.5,-0.1], 5, 5, 1)
+        drawnow;
 
         if SAVE_PLOTS
             if iConf == 1
@@ -217,7 +217,7 @@ if SYSTEM_MDL == 0
             "Name", sprintf("snapshots case %d", iC), ...
             "NumberTitle", "off", "Theme", "Light");
 
-        colorMapFun = @(x) crameri("imola", x+1);
+        colorMapFun = @(x) crameri("imola", x);
         simStudyRes(iC).MBSimRef.drawSnapshots("figure", fhSS, ...
             "nSnapShots", 15, "includeColorbar", false, ...
             "snapShotColormap", colorMapFun);
@@ -347,17 +347,12 @@ if SYSTEM_MDL == 2
         %colororder(crameri('romaO',nSeg+1));
         colororder(tumBlueMap(nSeg));
 
-
-        legendDof = round(linspace(1,nSeg,4));
-        legend(ph(legendDof), arrayfun(@(x) sprintf("seg. %d", x), legendDof), ...
+        % Invisible proxy for the legend entry
+        hold on;
+        hProxy = plot(ax, NaN, NaN, 'LineStyle', 'none');
+        legend([ph(1),hProxy,ph(end)], ["seg. 1", "$\;\vdots$", sprintf("seg. %d", nSeg)], ...
             "interpreter", "latex", "Location", "east", ...
-            "IconColumnWidth", 15, "BackgroundAlpha", 0.85);
-
-        % if iC == 0
-        %     legend(arrayfun(@(x) sprintf("$q_{%d}$", x), plotDof), ...
-        %         "interpreter", "latex", "Location", "southwest", ...
-        %         "IconColumnWidth", 15, "Orientation", "horizontal");
-        % end
+            "IconColumnWidth", 15, "BackgroundAlpha", 0.94);
 
         ax = nexttile;
         plot(simStudyRes(iC).MBSimRef.results.tout, ...

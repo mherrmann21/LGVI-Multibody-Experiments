@@ -16,7 +16,7 @@ runOpts.debug = false;
 
 % Whether to save data and plots or animate the initial guess
 runOpts.saveResults = true;
-runOpts.animateInitialGuess = true;
+runOpts.animateInitialGuess = false;
 
 % Vector of time steps to investigate
 % Important: Must be even divisors of the end time!
@@ -28,8 +28,8 @@ runOpts.resultsDir = fullfile(getRootFolder, "results", "runs");
 % Specify each case as a function handle in the cell array.
 caseDefinitionFcns = {
     @ocp_case_planar_manipulator
-    %@ocp_case_rigid_robot
-    %@ocp_case_continuum_manipulator
+    @ocp_case_rigid_robot
+    @ocp_case_continuum_manipulator
     };
 
 %% Run requested cases

@@ -12,7 +12,7 @@ close all
 %% Workflow settings
 
 % Whether to use timeit (accurate and slow) or tic/toc (fast)
-runOpts.accurateTiming = false;
+runOpts.accurateTiming = true;
 
 % Whether to save data and plots
 runOpts.saveResults = true;

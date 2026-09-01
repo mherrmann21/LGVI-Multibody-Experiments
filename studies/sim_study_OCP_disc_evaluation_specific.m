@@ -14,7 +14,7 @@ close all
 % 0 = rigid
 % 1 = contManip
 % 3 = planar Manip
-SYSTEM_MDL = 3;
+SYSTEM_MDL = 1;
 SAVE_PLOTS = true;
 
 % Directory where all result subfolders are
@@ -27,13 +27,13 @@ plotSaveDir = fullfile(getRootFolder, "results", "plots", "optimal-control");
 % subfolder name
 switch SYSTEM_MDL
     case 0
-        subFolder = "260313_1622_simStudy_ocp_discretization__system_0";
+        subFolder = "260831_1349_simStudy_ocp_discretization__system_0";
         plotSaveSubFolder = "ocp_simstudy_labRob";
     case 1
-        subFolder = "260313_1115_simStudy_ocp_discretization__system_1";
+        subFolder = "260831_1406_simStudy_ocp_discretization__system_1";
         plotSaveSubFolder = "ocp_simstudy_contManip";
     case 3
-        subFolder = "260813_1140_simStudy_ocp_discretization__system_3";
+        subFolder = "260831_1342_simStudy_ocp_discretization__system_3";
         plotSaveSubFolder = "ocp_simstudy_planarManip";
     otherwise
         error("Not defined.");
@@ -133,7 +133,7 @@ if SYSTEM_MDL == 3
         vis.linkVisualization(iLink).coordSysRef.Name = "";
     end
     view(38, 12);
-    %circular_arrow(fhVis, 0.3, [0.5,-0.1], 5, 5, 1)
+    drawnow;
 
     if SAVE_PLOTS
         saveFigureArray(fhVis, plotSaveFolder, ...
@@ -245,6 +245,7 @@ if SYSTEM_MDL == 1
     vis.linkVisualization(1).coordSysJ.Visible = false;
     vis.linkVisualization(1).coordSysTCP.h_nameLabel.Visible = "off";
     view(135, 45);
+    drawnow;
 
     if SAVE_PLOTS
         saveFigureArray(fhVis, plotSaveFolder, ...
@@ -261,7 +262,7 @@ if 1% SYSTEM_MDL == 3
         "Name", "snapshots", ...
         "NumberTitle", "off", "Theme", "Light");
 
-    snapShotColormap = @(x) crameri("imola", x+1);
+    snapShotColormap = @(x) crameri("imola", x);
 
     if  SYSTEM_MDL == 3
         % Planar manip
@@ -276,7 +277,9 @@ if 1% SYSTEM_MDL == 3
         % Coordinate frame for inertial frame
         % Shift slightly in negative y direction to place text labels on top of
         % other plot stuff
-        elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), [0,-0.15,0]), "Scale", 0.5, "Name", "", "LabelFontSize", 12, ...
+        elara.visualization.CoordinateFrame( ...
+            elara.SE3.matrix(eye(3), [0,-0.15,0]), ...
+            "Scale", 0.5, "Name", "", "LabelFontSize", 12, ...
             "AxisColors", repmat(lines(1), [3,1]));
 
         text(0.2, 0, -2, ...

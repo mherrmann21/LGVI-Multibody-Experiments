@@ -14,7 +14,7 @@ close all
 % 0 = rigid
 % 1 = contManip
 % 3 = planar Manip
-SYSTEM_MDL = 3;
+SYSTEM_MDL = 0;
 SAVE_PLOTS = true;
 
 % Directory where all result subfolders are
@@ -27,13 +27,13 @@ plotSaveDir = fullfile(getRootFolder, "results", "plots", "optimal-control");
 % subfolder name
 switch SYSTEM_MDL
     case 0
-        subFolder = "260313_1622_simStudy_ocp_discretization__system_0";
+        subFolder = "260831_1349_simStudy_ocp_discretization__system_0";
         plotSaveSubFolder = "ocp_simstudy_labRob";
     case 1
-        subFolder = "260313_1115_simStudy_ocp_discretization__system_1";
+        subFolder = "260831_1406_simStudy_ocp_discretization__system_1";
         plotSaveSubFolder = "ocp_simstudy_contManip";
     case 3
-        subFolder = "260813_1140_simStudy_ocp_discretization__system_3";
+        subFolder = "260831_1342_simStudy_ocp_discretization__system_3";
         plotSaveSubFolder = "ocp_simstudy_planarManip";
     otherwise
         error("Not defined.");
@@ -53,7 +53,7 @@ res.success = res.return_status == "Solve_Succeeded";
 % Only get successful solution data
 res.qErrorM(~res.success) = nan;
 res.qErrorN(~res.success) = nan;
-res.fError(~res.success) = nan;
+res.fError(~res.success)  = nan;
 res.uErrorM(~res.success) = nan;
 res.uErrorN(~res.success) = nan;
 res.iter_count(~res.success) = nan;
